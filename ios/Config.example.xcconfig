@@ -1,0 +1,10 @@
+// Fill these from the Wearables Developer Center (not needed with Developer Mode on the glasses).
+META_APP_ID =
+CLIENT_TOKEN =
+// Your Apple Developer Team ID (Xcode > Signing & Capabilities).
+DEVELOPMENT_TEAM =
+// Second Look backend. Simulator: localhost works. Real iPhone: use your Mac's LAN IP or the Hostinger URL.
+// Note: "//" starts a comment in xcconfig, so the URL is split with $().
+API_BASE_URL = http:/$()/localhost:8765
+// Same as APP_TOKEN in api/.env (needed through the public tunnel).
+APP_TOKEN =

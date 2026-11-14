@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; width: 1024px; height: 1024px; overflow: hidden; background: #F6EEE6; }
+  /* Same palette as the app's calm aura: deep blue, sky, periwinkle on warm cream. */
+  .aura { position: absolute; inset: 0; background:
+      radial-gradient(circle at 46% 58%, #1F3BE0 0%, rgba(31,59,224,0.85) 22%, rgba(31,59,224,0) 62%),
+      radial-gradient(circle at 30% 70%, #2CC3FF 0%, rgba(44,195,255,0.7) 25%, rgba(44,195,255,0) 60%),
+      radial-gradient(circle at 74% 30%, #7C8CFF 0%, rgba(124,140,255,0.75) 22%, rgba(124,140,255,0) 58%),
+      #F6EEE6; filter: blur(18px); transform: scale(1.08); }
+  .shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.04), rgba(0,0,0,0) 45%, rgba(0,0,0,0.12)); }
+  svg { position: absolute; inset: 0; }
+</style>
+</head>
+<body>
+  <div class="aura"></div>
+  <div class="shade"></div>
+  <svg width="1024" height="1024" viewBox="0 0 1024 1024">
+    <!-- the "second look": a faint echo of the eye, offset up-right -->
+    <path d="M232 532 Q512 282 792 532 Q512 782 232 532 Z" transform="translate(34 -34)"
+          fill="none" stroke="white" stroke-opacity="0.38" stroke-width="22" stroke-linejoin="round"/>
+    <!-- the eye -->
+    <path d="M232 532 Q512 282 792 532 Q512 782 232 532 Z"
+          fill="none" stroke="white" stroke-width="30" stroke-linejoin="round"/>
+    <circle cx="512" cy="532" r="92" fill="white"/>
+    <circle cx="540" cy="506" r="24" fill="#1F3BE0" fill-opacity="0.55"/>
+  </svg>
+</body>
+</html>

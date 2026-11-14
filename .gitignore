@@ -1,0 +1,19 @@
+# Secrets and local config (never commit)
+.env
+*.env
+!.env.example
+ios/Config.xcconfig
+
+# Build output and environments
+.venv/
+__pycache__/
+*.pyc
+ios/build/
+ios/*.xcodeproj/xcuserdata/
+ios/*.xcodeproj/project.xcworkspace/xcuserdata/
+DerivedData/
+.DS_Store
+
+# Large raw recordings (keep the short drafts)
+presentation/video/raw-*.mp4
+presentation/video/.recpid

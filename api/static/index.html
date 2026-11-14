@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Second Look: is this a scam?</title>
+<style>
+  body{font-family:system-ui,sans-serif;max-width:760px;margin:32px auto;padding:0 16px;background:#0e1620;color:#e8eef3;font-size:18px}
+  h1{margin-bottom:4px} .muted{color:#93a4b3;font-size:15px}
+  textarea,input{width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid #2c3e50;background:#14212d;color:#fff;font-size:17px}
+  textarea{height:150px} button{margin-top:12px;padding:14px 22px;font-size:18px;border:0;border-radius:10px;background:#3b82f6;color:#fff;cursor:pointer}
+  .card{margin-top:22px;padding:18px;border-radius:14px;background:#14212d;border-left:8px solid #666}
+  .scam{border-color:#ef4444}.suspicious{border-color:#f59e0b}.looks_ok{border-color:#22c55e}.not_sure{border-color:#94a3b8}
+  .sig{font-size:15px;margin:6px 0} code{color:#9cd}
+  table{width:100%;border-collapse:collapse;font-size:15px;margin-top:8px} td,th{padding:6px;border-bottom:1px solid #2c3e50;text-align:left}
+</style>
+</head>
+<body>
+<h1>Second Look</h1>
+<p class="muted">Paste a message or link. We check for scam signs and explain why. Nothing you paste is stored.</p>
+<label for="t">Message</label>
+<textarea id="t" placeholder="e.g. Your parcel is waiting. Pay 1,99 € customs fee: posti-delivery.xyz"></textarea>
+<label for="u">Link (optional)</label>
+<input id="u" placeholder="https://...">
+<button onclick="check()">Check it</button>
+<div id="out" aria-live="polite"></div>
+
+<h2 style="margin-top:40px">How accurate is it?</h2>
+<div id="metrics" class="muted">Loading evaluation results…</div>
+
+<script>
+const LABEL={scam:"Likely scam",suspicious:"Be careful",looks_ok:"No scam signs found",not_sure:"Not sure"};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+async function check(){
+  const out=document.getElementById('out'); out.innerHTML='<p class="muted">Checking…</p>';
+  try{
+    const r=await fetch('/analyze',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({text:document.getElementById('t').value,url:document.getElementById('u').value||null})});
+    if(!r.ok){out.innerHTML='<p>Please paste a message or link.</p>';return;}
+    const d=await r.json();
+    const sigs=d.signals.filter(s=>s.weight>0).map(s=>`<div class="sig">• <b>${esc(s.label)}</b>: ${esc(s.explanation)} <code>"${esc(s.evidence)}"</code> <span class="muted">(${s.source})</span></div>`).join('');
+    out.innerHTML=`<div class="card ${d.verdict}"><h2>${LABEL[d.verdict]}</h2><p>${esc(d.spoken)}</p>${sigs}
+      <p class="muted">Confidence ${Math.round(d.confidence*100)}% · ${d.latency_ms} ms · AI second opinion: ${d.llm_used?'yes':'no'}</p></div>`;
+  }catch(e){out.innerHTML='<div class="card not_sure"><h2>Can\'t check right now</h2><p>Don\'t pay yet. Call the official number.</p></div>';}
+}
+fetch('/metrics').then(r=>r.ok?r.json():null).then(m=>{
+  const el=document.getElementById('metrics');
+  if(!m){el.textContent='No evaluation run yet.';return;}
+  el.innerHTML=`<table><tr><th>Examples</th><th>Precision</th><th>Recall</th><th>False-positive rate</th><th>"Not sure" rate</th></tr>
+    <tr><td>${m.n}</td><td>${m.precision}</td><td>${m.recall}</td><td>${m.false_positive_rate}</td><td>${m.not_sure_rate}</td></tr></table>
+    <p>Dataset: ${esc(m.dataset)} · LLM used: ${m.llm_used}</p>`;
+});
+</script>
+</body>
+</html>
