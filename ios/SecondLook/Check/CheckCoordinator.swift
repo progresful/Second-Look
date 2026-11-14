@@ -160,6 +160,7 @@ final class CheckCoordinator {
   @ObservationIgnored private var liveFromAlwaysOn = false
   @ObservationIgnored private var lastQuietLog = Date.distantPast
   @ObservationIgnored private var liveCooldownUntil = Date.distantPast
+  @ObservationIgnored private var lastGlassesPhotoAt = Date.distantPast
   /// Live scan is reading the glasses' camera (true) or the phone camera (false).
   private(set) var usingGlassesVideo = false
   @ObservationIgnored private var liveTask: Task<Void, Never>?
@@ -217,8 +218,23 @@ final class CheckCoordinator {
   }
 
   private func liveTick() async {
-    guard let frame = usingGlassesVideo ? glasses.videoSnapshot() : liveCamera.snapshot() else { return }
-    let lines = await OfflineChecker.recognizeLines(in: frame.downscaled(maxSide: 1280), fast: true)
+    guard var frame = usingGlassesVideo ? glasses.videoSnapshot() : liveCamera.snapshot() else { return }
+    // Glasses video frames are small: read them with the accurate recogniser.
+    var lines = await OfflineChecker.recognizeLines(in: frame.downscaled(maxSide: 1280), fast: !usingGlassesVideo)
+    // Text too small to read in the video? Take a full-resolution glasses photo (at most every 4 s).
+    if usingGlassesVideo, !liveCheckInFlight, Date().timeIntervalSince(lastGlassesPhotoAt) > 4 {
+      let regions = await OfflineChecker.textRegionCount(in: frame)
+      // Much more text on view than we can read (e.g. a page of small print): get a sharp photo.
+      if regions >= 4, regions >= lines.count * 2 {
+        lastGlassesPhotoAt = Date()
+        NSLog("[SecondLook] live: %d text areas but %d readable lines, taking a full-resolution photo", regions, lines.count)
+        if let photo = try? await glasses.photoFromStream() {
+          frame = photo
+          lines = await OfflineChecker.recognizeLines(in: photo.downscaled(maxSide: 2000), fast: false)
+          NSLog("[SecondLook] live: photo read %d lines", lines.count)
+        }
+      }
+    }
     guard liveStatus != .off else { return }
     liveFrameSize = frame.size
     liveLines = lines

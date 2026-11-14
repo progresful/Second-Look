@@ -81,6 +81,17 @@ enum OfflineChecker {
     }
   }
 
+  /// How many text-like regions are in the image (cheap; works even when the text is too
+  /// small to read). Used to decide when a full-resolution glasses photo is worth taking.
+  static func textRegionCount(in image: UIImage) async -> Int {
+    guard let cg = image.cgImage else { return 0 }
+    return await withCheckedContinuation { cont in
+      let req = VNDetectTextRectanglesRequest { r, _ in cont.resume(returning: r.results?.count ?? 0) }
+      req.reportCharacterBoxes = false
+      do { try VNImageRequestHandler(cgImage: cg, options: [:]).perform([req]) } catch { cont.resume(returning: 0) }
+    }
+  }
+
   /// Cheap on-device gate for live scan: is there enough text, and does it involve
   /// money, a link, codes or scam wording? Only then is the frame sent for a full check.
   static func worthChecking(_ text: String) -> Bool {

@@ -370,8 +370,9 @@ final class GlassesManager {
 
   func capturePhoto(timeout: Duration = .seconds(8)) async throws -> UIImage {
     guard let session, sessionState == .started else { throw GlassesError.notConnected }
-    // While live video runs, the newest frame is the photo (don't stop the stream).
-    if liveVideoOn, let frame = videoSnapshot() { return frame }
+    // While live video runs, take a full-resolution photo from the running stream
+    // (sharper than a video frame) and keep the stream going.
+    if liveVideoOn { return try await photoFromStream(timeout: timeout) }
     if try await wearables.checkPermissionStatus(.camera) != .granted {
       guard try await wearables.requestPermission(.camera) == .granted else { throw GlassesError.permissionDenied }
     }
@@ -398,13 +399,34 @@ final class GlassesManager {
     return image
   }
 
+  /// Full-resolution photo while the video stream keeps running.
+  func photoFromStream(timeout: Duration = .seconds(6)) async throws -> UIImage {
+    guard camera != nil, streamState == .streaming else { throw GlassesError.notConnected }
+    let t0 = Date()
+    let data: Data = try await withCheckedThrowingContinuation { cont in
+      photoContinuation = cont
+      guard camera?.stream.capturePhoto(format: .jpeg) == true else {
+        photoContinuation = nil; cont.resume(throwing: GlassesError.captureFailed); return
+      }
+      Task { [weak self] in
+        try? await Task.sleep(for: timeout)
+        guard let self, let pending = self.photoContinuation else { return }
+        self.photoContinuation = nil; pending.resume(throwing: GlassesError.timeout)
+      }
+    }
+    guard let image = UIImage(data: data) else { throw GlassesError.captureFailed }
+    lastGlassesPhoto = image
+    NSLog("[SecondLook] glasses photo: %.0fx%.0f in %.1f s", image.size.width, image.size.height, Date().timeIntervalSince(t0))
+    return image
+  }
+
   private func startStream(on session: DeviceSession) throws {
     guard camera == nil else { return }
     // High resolution: we need to read small text on letters and screens.
     // Raw (uncompressed) frames: VideoFrame.makeUIImage() can't convert hvc1 (HEVC) frames,
     // and live scan needs images. Medium resolution keeps raw frames within the link budget.
     // 7 fps is plenty (live scan reads twice a second) and keeps the glasses cooler.
-    let config = StreamConfiguration(videoCodec: .raw, resolution: .medium, frameRate: 7)
+    let config = StreamConfiguration(videoCodec: .raw, resolution: .high, frameRate: 7)
     guard let cam = try session.addCamera(config: config) else { throw GlassesError.cameraUnavailable }
     camera = cam
     cam.stream.statePublisher.listen { [weak self] state in
