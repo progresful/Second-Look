@@ -15,10 +15,11 @@ KNOWN_GOOD = {
     "posti.fi", "kela.fi", "vero.fi", "poliisi.fi", "tulli.fi", "suomi.fi", "mobilepay.fi",
     "traficom.fi", "dhl.com", "dhl.fi", "microsoft.com", "apple.com", "amazon.com",
     "tori.fi", "blickers.com", "verkkokauppa.com", "gigantti.fi", "zalando.fi", "ikea.com", "nike.com",
+    "ray-ban.com", "paypal.com", "unicef.org",
 }
 BRAND_WORDS = {"op", "nordea", "danske", "spankki", "aktia", "posti", "kela", "vero", "poliisi",
                "tulli", "suomi", "mobilepay", "dhl", "microsoft", "apple", "amazon", "paypal",
-               "tori", "verkkokauppa", "gigantti", "zalando", "ikea", "nike", "parkki", "easypark"}
+               "tori", "verkkokauppa", "gigantti", "zalando", "ikea", "nike", "parkki", "easypark", "rayban"}
 RISKY_TLDS = {"xyz", "top", "click", "shop", "online", "site", "icu", "buzz", "live", "info", "monster", "cyou", "sbs", "store", "sale", "bond", "lat"}
 SHORTENERS = {"bit.ly", "tinyurl.com", "t.co", "is.gd", "cutt.ly", "rebrand.ly", "ow.ly", "shorturl.at"}
 

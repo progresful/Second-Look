@@ -18,6 +18,16 @@ SPOKEN = {
     "not_sure": "I can't tell. Don't pay yet. Call the official number.",
 }
 _TECH = {t.id: t for t in TECHNIQUES}
+# Web-address and price signs normally come from our own checks. When Gemini sees one in a
+# photo that our checks couldn't (e.g. a brand we don't list), count it too.
+_VISUAL = {
+    "lookalike_domain": ("Lookalike domain", 0.75,
+                         "The web address imitates a real company's address. Fake shops do this."),
+    "price_too_low": ("Price far below normal", 0.5,
+                      "The price is far below what this normally costs. Too cheap is a common fake-shop sign."),
+    "price_mismatch": ("Prices don't add up", 0.6,
+                       "The prices on the page don't match each other, which is a common bait trick."),
+}
 
 
 def analyze(text: str, url: Optional[str] = None, use_llm: bool = True) -> dict:
@@ -90,16 +100,28 @@ def analyze_image(image_b64: str, mime: str = "image/jpeg", live: bool = False, 
     url = g.get("url") or None
     res = analyze(text, url, use_llm=False)  # rules + prices + domain on Gemini's reading
 
-    have = {s["id"] for s in res["signals"]}
+    seen, uniq = set(), []
+    for sig in res["signals"]:  # the address can be found both in the text and as the url
+        if sig["id"] not in seen:
+            seen.add(sig["id"]); uniq.append(sig)
+    res["signals"] = uniq
+    have = set(seen)
     boxes = []
     for t in g["techniques"]:
         base = _TECH.get(t["id"])
-        label = base.label if base else t["id"].replace("_", " ").capitalize()
+        label = base.label if base else _VISUAL.get(t["id"], (t["id"].replace("_", " ").capitalize(),))[0]
         if "box_2d" in t:
             boxes.append({"id": t["id"], "label": label, "evidence": t.get("evidence", ""), "box_2d": t["box_2d"]})
-        if base and t["id"] not in have:
+        if t["id"] in have:
+            continue
+        if base:
             res["signals"].append({"id": base.id, "label": base.label, "weight": round(base.weight * 0.6, 2),
                                    "explanation": base.explanation, "evidence": t.get("evidence", ""), "source": "gemini"})
+        elif t["id"] in _VISUAL:
+            vlabel, w, why = _VISUAL[t["id"]]
+            res["signals"].append({"id": t["id"], "label": vlabel, "weight": round(w * 0.8, 2),
+                                   "explanation": why, "evidence": t.get("evidence", ""), "source": "gemini"})
+        have.add(t["id"])
     # Re-score with Gemini's extra findings and its overall likelihood.
     score = sum(s["weight"] for s in res["signals"]) + (g["scam_likelihood"] - 0.5) * 0.6
     strong = [s for s in res["signals"] if s["weight"] >= 0.7]

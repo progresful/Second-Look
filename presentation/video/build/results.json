@@ -1,0 +1,118 @@
+{
+ "shop6": {
+  "verdict": "scam",
+  "confidence": 1.0,
+  "spoken": "Likely scam. Don't pay or reply. Uses the name 'ray-ban.com' but ray-band.com is not its official website.",
+  "reason": "Uses the name 'ray-ban.com' but ray-band.com is not its official website.",
+  "signals": [
+   {
+    "id": "lookalike_domain",
+    "label": "Lookalike domain",
+    "weight": 0.75,
+    "explanation": "Uses the name 'ray-ban.com' but ray-band.com is not its official website.",
+    "evidence": "www.ray-band.com",
+    "source": "source"
+   },
+   {
+    "id": "lookalike_domain",
+    "label": "Lookalike domain",
+    "weight": 0.75,
+    "explanation": "Uses the name 'ray-ban.com' but ray-band.com is not its official website.",
+    "evidence": "www.ray-band.com",
+    "source": "source"
+   },
+   {
+    "id": "price_too_low",
+    "label": "Price far below normal",
+    "weight": 0.4,
+    "explanation": "The price is far below what this normally costs. Too cheap is a common fake-shop sign.",
+    "evidence": "EUR9.90",
+    "source": "gemini"
+   }
+  ],
+  "redacted_text": "https://www.ray-band.com/eu/sunglasses/RB2228ray-ban%20marvel%C2%A0-%20deadpool%20rb2...\nFree Shipping and Free Extended Returns for up to 45 days\nOUR SERVICES & EYE EXAM\nRay-Ban GENUINE SINCE 1937\nGIFTS SUNGLASSES EYEGLASSES CUSTOMIZE PROMO\nGIVE ICONIC. GIVE RAY-BAN. | SHOP GIFTS FOR EVERYONE ON YOUR LIST\nRAY-BAN MARVEL\u00a9 - DEADPOOL RB2228\nNEW\n1 COLORS\nFRAME Polished Black\nLENSES Dark Grey\nTRY LENSES >\nBRIDGE & NOSEPADS HIGH BRIDGE FIT\nEstimated Delivery Date: 24-11-2026\nFREE & EASY RETURNS\nNEED HELP? >\nBy mail\nEUR9.90 ADD TO BAG",
+  "llm_used": true,
+  "model": "gemini-3.5-flash",
+  "latency_ms": 7277,
+  "boxes": [
+   {
+    "id": "lookalike_domain",
+    "label": "Lookalike domain",
+    "evidence": "https://www.ray-band.com/eu/sunglasses/RB2228ray-ban%20marvel%C2%A0-%20deadpool%20rb2...",
+    "box_2d": [
+     147,
+     140,
+     168,
+     545
+    ]
+   },
+   {
+    "id": "price_too_low",
+    "label": "Price far below normal",
+    "evidence": "EUR9.90",
+    "box_2d": [
+     842,
+     563,
+     856,
+     610
+    ]
+   }
+  ],
+  "url": "https://www.ray-band.com/eu/sunglasses/RB2228ray-ban%20marvel%C2%A0-%20deadpool%20rb2...",
+  "gemini_reason": "This website uses a fake web address with an extra letter (ray-band.com) and sells designer sunglasses for just \u20ac9.90 to trick buyers."
+ },
+ "mail": {
+  "verdict": "suspicious",
+  "confidence": 0.27,
+  "spoken": "Be careful. Huge discounts, guaranteed profits or easy daily income are classic bait.",
+  "reason": "Huge discounts, guaranteed profits or easy daily income are classic bait.",
+  "signals": [
+   {
+    "id": "authority_claim",
+    "label": "Claims to be an authority or brand",
+    "weight": 0.25,
+    "explanation": "Mentions a bank, delivery firm or authority. Not a scam sign alone, but check the sender is real.",
+    "evidence": "Bank",
+    "source": "rules"
+   },
+   {
+    "id": "unrealistic_offer",
+    "label": "Unrealistic offer or returns",
+    "weight": 0.36,
+    "explanation": "Huge discounts, guaranteed profits or easy daily income are classic bait.",
+    "evidence": "paid UNICEF Part-Time job with a weekly paid job of $500.00 USD",
+    "source": "gemini"
+   }
+  ],
+  "redacted_text": "Weekly Paid Job\nAS Aisha S. Mansour <[EMAIL]>\nTo\nI am sharing job opportunity information to individuals who might be interested in a paid UNICEF Part-Time job with a weekly paid job of $500.00 USD.\nIf interested, Kindly contact Dr Thomas Nicholas via [EMAIL] N.B, this is strictly a work from home position.\nSign,\nCareer Opportunity\nDISCLAIMER: Nothing contained in this e-mail, that is, its main text and the attachments thereto shall be construed as legally binding to the Bank of Tanzania.\nPlease, refer to the full disclaimer found at http://www.bot.go.tz/EmailDisclaimer.asp",
+  "llm_used": true,
+  "model": "gemini-3.5-flash",
+  "latency_ms": 9833,
+  "boxes": [
+   {
+    "id": "unrealistic_offer",
+    "label": "Unrealistic offer or returns",
+    "evidence": "paid UNICEF Part-Time job with a weekly paid job of $500.00 USD",
+    "box_2d": [
+     383,
+     310,
+     452,
+     741
+    ]
+   },
+   {
+    "id": "authority_claim",
+    "label": "Claims to be an authority or brand",
+    "evidence": "UNICEF Part-Time job",
+    "box_2d": [
+     385,
+     313,
+     414,
+     472
+    ]
+   }
+  ],
+  "url": null,
+  "gemini_reason": "This email claims to offer a high-paying UNICEF job but directs you to a personal Gmail address, which is a common job scam."
+ }
+}
