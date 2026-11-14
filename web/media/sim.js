@@ -31,8 +31,9 @@
     b.className = 'sim-chip'; b.textContent = SCENES[k].label; b.dataset.k = k;
     b.onclick = () => select(k, true); chips.appendChild(b);
   });
+  screen.classList.add('auto');
   modeBtn.onclick = () => {
-    alwaysOn = !alwaysOn; modeBtn.classList.toggle('on', alwaysOn);
+    alwaysOn = !alwaysOn; modeBtn.classList.toggle('on', alwaysOn); screen.classList.toggle('auto', alwaysOn);
     modeBtn.querySelectorAll('span').forEach((s, i) => s.classList.toggle('sel', i === (alwaysOn ? 1 : 0)));
     select(current, false);
   };
@@ -81,7 +82,7 @@
   function resetView() {
     clearTimers(); if (tl) tl.kill();
     gsap.killTweensOf([cam, hud, card, line, scan]);
-    boxes.innerHTML = ''; gsap.set(hud, { opacity: 0, y: 10 }); gsap.set(card, { opacity: 0, y: 14, display: 'none' });
+    screen.classList.remove('alerting'); boxes.innerHTML = ''; gsap.set(hud, { opacity: 0, y: 10 }); gsap.set(card, { opacity: 0, y: 14, display: 'none' });
     line.textContent = ''; chip.textContent = ''; chip.className = 'sim-status';
   }
   function select(k, user) {
@@ -150,7 +151,7 @@
     card.querySelector('.ch span').textContent = w; card.querySelector('.act').textContent = a;
     card.querySelector('.cwhy').textContent = why;
     card.querySelector('.cps').innerHTML = signs.map(x => `<span>${x}</span>`).join('');
-    gsap.set(card, { display: 'block' }); gsap.to(card, { opacity: 1, y: 0, duration: .6, delay: .7, ease: 'power3.out' });
+    screen.classList.add('alerting'); gsap.set(card, { display: 'block' }); gsap.to(card, { opacity: 1, y: 0, duration: .6, delay: .7, ease: 'power3.out' });
   }
   function typeLine(text) {
     const o = { n: 0 }; gsap.to(o, { n: text.length, duration: Math.min(2.4, text.length * .025), ease: 'none', delay: .3,
