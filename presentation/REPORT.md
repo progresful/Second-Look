@@ -39,7 +39,7 @@ The user's rule: stop before deck/video if the product can't be run. The phone p
 2. Re-record the simulator backup cleanly: tap **Allow** once on the iPhone Air simulator's notification prompt (or grant Claude access in the simulator panel), then rerun with `xcrun simctl launch <device> fi.junction.secondlook --demo-check`.
 3. Run the communication test (3 people) and, if possible, a product test (VALIDATION.md).
 4. Publish the source (git repo + README with ≤3-command setup, screenshots, limitations, disclosure of Meta DAT, Apple Vision, FastAPI, Gemini).
-5. Optional: deploy the server (Hostinger) to get a public demo link; enable Gemini with a key.
+5. Done 14 Nov: server deployed at https://secondlook.pgf.lv (Hetzner, Ubuntu, nginx + HTTPS, systemd). Checks need the app token; the public web demo pages load but their checks are refused without it. Gemini enabled.
 6. Then make the video (60 s) and the 6-slide deck + PDF; make `cover.png`.
 7. Remove the debug-only `--demo-check` flag effect from release builds (it's `#if DEBUG` already; confirm).
 
