@@ -7,7 +7,7 @@ Date: 14 Nov 2026. Nothing has been submitted, posted or uploaded.
 - Regression set: 44/44 pass (**in-sample**, not accuracy).
 - iOS app (`ios/`): builds; in the iOS simulator, the bundled webshop photo → server image endpoint unavailable → on-device text reading → server rules → "likely scam", red screen, one paragraph (`screens/01–03`).
 - **Real iPhone 16 (14 Nov):** app installed and run. The phone-camera check works, and live scan works: it reads the camera text on the phone twice a second, boxes the message, and sends at most one frame every 2 s to Gemini (fast model) when it's worth checking. Red boxes mark the scam signs. It ran over 5G through a temporary Cloudflare tunnel, which only accepts requests carrying the app token; the team reported it working. No glasses involved.
-- **Gemini enabled (14 Nov):** real key. Models are chosen by content: live frame 3.0 s, tapped photo 8.6 s, text 0.8–1.8 s (timed on the server).
+- **Gemini enabled (14 Nov):** real key. Models are chosen by content: live frame ~1.8 s (phone sends its own text reading; Gemini only judges and marks where), tapped photo 8.6 s, text 0.8–1.8 s (timed on the server).
 - Web simulation of the glasses view (`api/static/glasses.html`, 17 scenarios): runs in a browser. It is a **simulation**, not glasses.
 
 ## Planned, simulated or unverified
