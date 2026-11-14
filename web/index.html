@@ -40,7 +40,7 @@ nav ul a{text-decoration:none;transition:color .2s} nav ul a:hover{color:#fff}
 .hero{position:relative;height:100svh;min-height:640px;overflow:hidden;background:#000}
 .pov{position:absolute;left:50%;top:clamp(140px,19svh,220px);width:max(100vw,150svh);aspect-ratio:16/9;transform:translateX(-50%)}
 .pov video,.pov .boxes{position:absolute;inset:0;width:100%;height:100%}
-.pov video{object-fit:cover}
+.pov video{object-fit:cover;filter:brightness(.74) contrast(1.14) saturate(1.08)}
 .lens{position:absolute;inset:0;pointer-events:none;
   background:radial-gradient(ellipse 80% 85% at 50% 52%,rgba(0,0,0,0) 62%,rgba(0,0,0,.4) 84%,rgba(0,0,0,.9) 100%)}
 .lensblur{position:absolute;inset:0;pointer-events:none;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
@@ -65,8 +65,8 @@ nav ul a{text-decoration:none;transition:color .2s} nav ul a:hover{color:#fff}
 .hud small i{width:6px;height:6px;border-radius:50%;background:var(--green)}
 .topfade{position:absolute;left:0;right:0;top:0;height:calc(clamp(140px,19svh,220px) + 90px);background:linear-gradient(180deg,#000 0%,#000 62%,rgba(0,0,0,0) 100%);pointer-events:none}
 .botfade{position:absolute;left:0;right:0;bottom:0;height:26%;background:linear-gradient(0deg,rgba(0,0,0,.85),rgba(0,0,0,0));pointer-events:none}
-.herotitle{position:absolute;top:74px;left:50%;transform:translateX(-50%);width:min(1200px,92vw);text-align:center;font-size:clamp(36px,4.6vw,78px);font-weight:700;letter-spacing:-.045em;line-height:1;text-shadow:0 4px 40px rgba(0,0,0,.45)}
-.transcript{position:absolute;top:calc(80px + clamp(48px,5.2vw,86px));left:50%;transform:translateX(-50%);width:min(1160px,92vw);text-align:center}
+.herotitle{position:absolute;top:78px;left:50%;transform:translateX(-50%);width:min(1200px,92vw);text-align:center;font-size:clamp(30px,3.4vw,54px);font-weight:600;letter-spacing:-.03em;line-height:1;text-shadow:0 4px 40px rgba(0,0,0,.45)}
+.transcript{position:absolute;top:calc(84px + clamp(40px,4vw,64px));left:50%;transform:translateX(-50%);width:min(1160px,92vw);text-align:center}
 .live{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.75);
   padding:7px 13px;border-radius:99px;background:rgba(255,255,255,.08);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.12)}
 .live i{width:7px;height:7px;border-radius:50%;background:var(--red);animation:pulse 1.6s infinite}
@@ -97,15 +97,15 @@ nav ul a{text-decoration:none;transition:color .2s} nav ul a:hover{color:#fff}
   .boxes .bx b{font-size:10px;padding:3px 6px}.scrollcue{display:none}}
 
 .statement{padding:22vh 0 12vh;text-align:center}
-.statement h2{font-size:clamp(40px,6vw,88px);font-weight:700;letter-spacing:-.04em;line-height:1.02;max-width:1000px;margin:0 auto}
+.statement h2{font-size:clamp(34px,4.2vw,64px);font-weight:600;letter-spacing:-.03em;line-height:1.02;max-width:1000px;margin:0 auto}
 .statement p{margin:24px auto 0;max-width:720px;font-size:clamp(18px,1.5vw,22px);color:var(--dim2);line-height:1.45;letter-spacing:-.01em}
 
 .story{position:relative;display:grid;grid-template-columns:1.1fr .9fr;gap:5vw;padding:0 0 12vh}
 .step{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:10vh 0}
-.step h2{font-size:clamp(36px,4.2vw,64px);font-weight:700;letter-spacing:-.035em;line-height:1.04;margin:12px 0 20px}
+.step h2{font-size:clamp(32px,3.4vw,52px);font-weight:600;letter-spacing:-.03em;line-height:1.04;margin:12px 0 20px}
 .step p{color:var(--dim2);font-size:clamp(17px,1.3vw,21px);line-height:1.47;letter-spacing:-.01em;max-width:560px}
 .stat{display:grid;grid-template-columns:auto 1fr;gap:10px 24px;align-items:center;margin-top:30px}
-.stat .n{font-size:clamp(52px,6vw,96px);font-weight:700;letter-spacing:-.05em;line-height:1}
+.stat .n{font-size:clamp(44px,4.6vw,72px);font-weight:600;letter-spacing:-.05em;line-height:1}
 .stat .l{font-size:17px;line-height:1.38;color:var(--ink);max-width:290px;letter-spacing:-.01em}
 .src{display:block;margin-top:22px;font-size:12px;color:var(--dim)}
 .src a{text-decoration:underline;text-decoration-color:rgba(255,255,255,.25);text-underline-offset:2px}
@@ -166,7 +166,7 @@ nav ul a{text-decoration:none;transition:color .2s} nav ul a:hover{color:#fff}
 .card .btns{display:flex;justify-content:space-between;margin-top:1em;font-size:.9em;font-weight:600}
 .card .btns span{padding:.65em 1em;border-radius:99px;background:rgba(255,255,255,.2);cursor:pointer;transition:transform .15s}
 .card .btns span.done{background:#fff;color:#111;padding:.65em 1.4em}
-.cam{position:absolute;inset:0;background:#000 url(media/hero-poster.jpg) 32% 50%/auto 100% no-repeat}
+.cam{position:absolute;inset:0;background:#000 url(media/hero-poster.jpg) 32% 50%/auto 100% no-repeat;filter:brightness(.8) contrast(1.1)}
 .cam .chip{position:absolute;top:6.5%;left:6%;display:flex;align-items:center;gap:.5em;padding:.55em .9em;border-radius:99px;background:rgba(30,30,30,.55);backdrop-filter:blur(8px);font-size:.85em;font-weight:600}
 .cam .chip i{width:.55em;height:.55em;border-radius:50%;background:var(--green)}
 .cam .region{position:absolute;left:4%;right:4%;top:20%;bottom:30%;border:2px dashed var(--yel);border-radius:14px}
@@ -180,7 +180,7 @@ nav ul a{text-decoration:none;transition:color .2s} nav ul a:hover{color:#fff}
 @keyframes wv{50%{height:100%}}
 
 .why{padding:16vh 0 12vh}
-.why h2{font-size:clamp(40px,5vw,76px);font-weight:700;letter-spacing:-.04em;line-height:1.03;max-width:900px}
+.why h2{font-size:clamp(32px,3.6vw,56px);font-weight:600;letter-spacing:-.03em;line-height:1.03;max-width:900px}
 .table{margin-top:56px;border-top:1px solid var(--line)}
 .row{display:grid;grid-template-columns:2.2fr repeat(4,1fr);align-items:center;border-bottom:1px solid var(--line);padding:20px 0;font-size:16px;letter-spacing:-.01em}
 .row.head{font-size:13px;color:var(--dim);font-weight:500}
@@ -191,7 +191,7 @@ nav ul a{text-decoration:none;transition:color .2s} nav ul a:hover{color:#fff}
 .end{position:relative;min-height:90vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;overflow:hidden}
 .end{background:radial-gradient(ellipse 50% 45% at 50% 48%,rgba(41,151,255,.16) 0%,rgba(124,140,255,.06) 45%,rgba(0,0,0,0) 75%)}
 .end img{position:relative;width:112px;border-radius:25px;box-shadow:0 18px 50px rgba(41,151,255,.22),0 2px 6px rgba(0,0,0,.4)}
-.end h2{position:relative;font-size:clamp(48px,7vw,104px);font-weight:700;letter-spacing:-.045em;margin-top:30px}
+.end h2{position:relative;font-size:clamp(40px,5vw,72px);font-weight:600;letter-spacing:-.03em;margin-top:30px}
 .end p{position:relative;color:var(--dim2);margin-top:10px;font-size:21px;letter-spacing:-.01em}
 footer{border-top:1px solid var(--line);padding:40px 0 60px;font-size:12px;color:var(--dim);line-height:1.7}
 footer h4{color:var(--ink);font-size:12px;font-weight:600;margin-bottom:6px}
@@ -227,7 +227,7 @@ footer .cols{display:grid;grid-template-columns:1fr 1fr;gap:40px}
   </div>
 
   <div class="topfade"></div>
-  <h1 class="herotitle">A second opinion, <span class="grad">before you pay.</span></h1>
+  <h1 class="herotitle">A second opinion before you pay.</h1>
   <div class="transcript" aria-live="polite">
     <span class="live"><i></i>Live · what Second Look sees</span>
     <p><span id="lineText"></span><span class="caret"></span></p>
@@ -241,8 +241,8 @@ footer .cols{display:grid;grid-template-columns:1fr 1fr;gap:40px}
 </header>
 
 <section class="statement wrap">
-  <h2>Scams don't wait in your inbox.<br><span class="gradHot">They wait at checkout.</span></h2>
-  <p>On a laptop, on a paper letter, in a phone call. The moment that matters is the one right before you pay, and that's exactly where Second Look looks.</p>
+  <h2>Scams don't stay in the inbox.</h2>
+  <p>They reach you on a laptop, on paper and on the phone, right before you pay.</p>
 </section>
 
 <main class="wrap">
@@ -250,31 +250,31 @@ footer .cols{display:grid;grid-template-columns:1fr 1fr;gap:40px}
   <div class="steps">
     <article class="step" id="problem" data-phone="ready">
       <span class="eyebrow">The problem</span>
-      <h2>More than half of adults met a scam <span class="grad">last year.</span></h2>
-      <div class="stat"><div class="n gradHot" data-count="57" data-suffix="%">57%</div><div class="l">of adults worldwide experienced a scam in the past 12 months</div>
+      <h2>Scams are everywhere.</h2>
+      <div class="stat"><div class="n " data-count="57" data-suffix="%">57%</div><div class="l">of adults worldwide experienced a scam in the past 12 months</div>
         <div class="n" data-count="23" data-suffix="%">23%</div><div class="l">lost money. Shopping scams hit 54% of victims.</div></div>
       <span class="src">Global Anti-Scam Alliance &amp; Feedzai, <a href="https://www.gasa.org/post/global-scams-on-the-rise-over-half-of-adults-worldwide-report-scam-encounters" target="_blank" rel="noopener">Global State of Scams 2025</a> · 46,000 adults, 42 markets</span>
     </article>
 
     <article class="step" data-phone="checking">
       <span class="eyebrow">Europe</span>
-      <h2>€4.2 billion in payment fraud. <span class="grad">Mostly paid by people.</span></h2>
-      <div class="stat"><div class="n gradHot" data-count="4.2" data-prefix="€" data-suffix="B" data-dec="1">€4.2B</div><div class="l">payment fraud in the EEA in 2024, up from €3.5B</div>
+      <h2>People pay the price.</h2>
+      <div class="stat"><div class="n " data-count="4.2" data-prefix="€" data-suffix="B" data-dec="1">€4.2B</div><div class="l">payment fraud in the EEA in 2024, up from €3.5B</div>
         <div class="n" data-count="85" data-prefix="~" data-suffix="%">~85%</div><div class="l">of credit-transfer fraud losses were borne by the users, mostly tricked into paying</div></div>
       <span class="src">EBA &amp; ECB, <a href="https://www.eba.europa.eu/publications-and-media/press-releases/joint-eba-ecb-report-payment-fraud-strong-authentication-remains-effective-fraudsters-are-adapting" target="_blank" rel="noopener">joint report on payment fraud</a>, Dec 2025</span>
     </article>
 
     <article class="step" data-phone="call">
       <span class="eyebrow">Finland</span>
-      <h2>Finns lost €72.5 million. “Safe account” calls took <span class="gradHot">€38.4M.</span></h2>
-      <div class="stat"><div class="n gradHot" data-count="72.5" data-prefix="€" data-suffix="M" data-dec="1">€72.5M</div><div class="l">lost to digital fraud in 2025, up from €62.9M</div>
+      <h2>It's close to home.</h2>
+      <div class="stat"><div class="n " data-count="72.5" data-prefix="€" data-suffix="M" data-dec="1">€72.5M</div><div class="l">lost to digital fraud in 2025, up from €62.9M</div>
         <div class="n" data-count="148" data-prefix="€" data-suffix="M">€148M</div><div class="l">attempted. Phishing targeted almost 17,000 people.</div></div>
       <span class="src">Finance Finland, bank data, <a href="https://www.finanssiala.fi/en/news/total-value-of-attempted-digital-fraud-climbed-to-148-million/" target="_blank" rel="noopener">Feb 2026</a></span>
     </article>
 
     <article class="step" id="how" data-phone="scan">
       <span class="eyebrow">How it works</span>
-      <h2>Just look. <span class="grad">It reads, checks and speaks.</span></h2>
+      <h2>Just look.</h2>
       <div class="flow">
         <div><span>01</span><b>Your phone reads</b>the text on the device, twice a second. Nothing leaves yet.</div>
         <div><span>02</span><b>Only if it matters</b>one frame is checked with Gemini, in about two seconds.</div>
@@ -285,27 +285,27 @@ footer .cols{display:grid;grid-template-columns:1fr 1fr;gap:40px}
 
     <article class="step" id="features" data-phone="alert">
       <span class="eyebrow">Clear answers</span>
-      <h2>Not just a red flag. <span class="grad">The reason.</span></h2>
+      <h2>It tells you why.</h2>
       <p>Every check ends in one of four answers: likely scam, be careful, looks okay, or not sure. Each comes with what to do, why, and the exact signs it noticed. It never says something is “safe”.</p>
       <div class="chips"><span>24 kinds of scam signs</span><span>Prices that don't add up</span><span>Look-alike web addresses</span><span>Codes &amp; “safe accounts”</span></div>
     </article>
 
     <article class="step" data-phone="listen">
       <span class="eyebrow">Call check</span>
-      <h2>Listens to the call. <span class="gradHot">Warns mid-call.</span></h2>
+      <h2>It listens to calls.</h2>
       <p>Turn it on for a call you're unsure about. It shows a live caption of what's said and speaks up the moment a caller asks for a code, a transfer to a “safe account” or remote access.</p>
     </article>
 
     <article class="step" data-phone="options">
       <span class="eyebrow">You choose</span>
-      <h2>Guard what matters, <span class="grad">on request or always on.</span></h2>
+      <h2>You choose what to guard.</h2>
       <div class="chips"><span>Letters &amp; bills</span><span>Messages</span><span>Websites</span><span>Webshops</span><span>QR codes</span><span>Phone calls</span></div>
       <p style="margin-top:24px">On request: tap check or press the glasses' capture button. Always on: it watches quietly and only speaks up if something looks wrong.</p>
     </article>
 
     <article class="step" data-phone="voice">
       <span class="eyebrow">Warm voice · private by design</span>
-      <h2>A calm voice that <span class="grad">runs on your phone.</span></h2>
+      <h2>A calm voice, offline.</h2>
       <p>Answers are spoken in a warm voice (Kokoro-82M) generated on the iPhone itself, so it keeps talking offline. Card numbers, IBANs, personal IDs, phone numbers and emails are removed before any text leaves the phone. Nothing is stored.</p>
     </article>
   </div>
@@ -364,7 +364,7 @@ footer .cols{display:grid;grid-template-columns:1fr 1fr;gap:40px}
 
 <section class="why wrap" id="why">
   <span class="eyebrow">Why Second Look</span>
-  <h2>Other protection lives in one app. <span class="gradHot">Scams don't.</span></h2>
+  <h2>Works where scams happen.</h2>
   <div class="table" role="table">
     <div class="row head" role="row"><div>What you get</div><div class="me">Second Look</div><div>Email spam filter</div><div>Browser warning</div><div>Bank alert</div></div>
     <div class="row" role="row"><div>Works on paper, laptops, other people's phones</div><div class="yes">✓</div><div class="no">—</div><div class="no">—</div><div class="no">—</div></div>
