@@ -1,0 +1,34 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Second Look · debug viewer</title><meta name="robots" content="noindex">
+<style>
+body{margin:0;background:#000;color:#f5f5f7;font:14px -apple-system,"SF Pro Text",sans-serif}
+header{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;border-bottom:1px solid #222}
+main{display:grid;grid-template-columns:1fr 360px;gap:18px;padding:18px}
+img{width:100%;border-radius:14px;background:#111;min-height:200px;object-fit:contain}
+table{width:100%;border-collapse:collapse} td{padding:7px 4px;border-bottom:1px solid #222;vertical-align:top} td:first-child{color:#86868b;width:42%}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;background:#555}
+input,button{font:inherit;padding:8px 10px;border-radius:9px;border:1px solid #333;background:#111;color:#fff}
+@media(max-width:800px){main{grid-template-columns:1fr}}
+</style></head><body>
+<header><b>Second Look · debug viewer</b><span id="live"><span class="dot" id="dot"></span><span id="age">waiting</span></span></header>
+<main><div><img id="img" alt="Latest frame from the app"></div>
+<div><div id="keybox" style="margin-bottom:14px"><input id="key" type="password" placeholder="App token" size="22"> <button id="save">Save</button></div>
+<table id="t"></table><p style="color:#86868b;font-size:12px">Turn on Settings → Mirror to debug viewer in the app (test builds). Only the latest frame is kept, in memory.</p></div></main>
+<script>
+const $=id=>document.getElementById(id); let key=localStorage.getItem('slkey')||''; if(key) $('keybox').style.display='none';
+$('save').onclick=()=>{key=$('key').value.trim(); localStorage.setItem('slkey',key); $('keybox').style.display='none';};
+let url=null;
+async function tick(){
+  if(!key) return;
+  try{
+    const s=await (await fetch('/debug/status',{headers:{'X-App-Token':key}})).json();
+    if(s.detail){ $('age').textContent=s.detail; $('keybox').style.display='block'; return; }
+    const fresh=s.age_s!==null && s.age_s<4; $('dot').style.background=fresh?'#30D158':'#FF9F0A';
+    $('age').textContent=s.age_s===null?'no data yet':(fresh?'live':'last update '+s.age_s+' s ago');
+    $('t').innerHTML=Object.entries(s).filter(([k])=>k!=='age_s').map(([k,v])=>`<tr><td>${k}</td><td>${String(v).replace(/</g,'&lt;')}</td></tr>`).join('');
+    const r=await fetch('/debug/frame.jpg?'+Date.now(),{headers:{'X-App-Token':key}});
+    if(r.ok){ const b=await r.blob(); if(url) URL.revokeObjectURL(url); url=URL.createObjectURL(b); $('img').src=url; }
+  }catch(e){ $('age').textContent='offline'; }
+}
+setInterval(tick,700); tick();
+</script></body></html>

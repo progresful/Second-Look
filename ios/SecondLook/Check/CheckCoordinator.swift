@@ -55,6 +55,8 @@ final class CheckCoordinator {
   @ObservationIgnored private let api: APIClient
   @ObservationIgnored private let speaker = Speaker.shared
   @ObservationIgnored private let phoneListener = PhoneListener()
+  /// Which microphone call listening uses right now.
+  var micName: String { usingPhoneMic ? (phoneListener.micName.isEmpty ? "the phone" : phoneListener.micName) : "the glasses" }
   @ObservationIgnored private var usingPhoneMic = false
   @ObservationIgnored private var transcript = ""
   @ObservationIgnored private var lastCallCheck = Date.distantPast
@@ -147,6 +149,9 @@ final class CheckCoordinator {
   /// Pixel size of the frames the boxes refer to (to map them onto the preview).
   private(set) var liveFrameSize: CGSize = .zero
   let liveCamera = LiveCamera()
+  @ObservationIgnored private var liveFromAlwaysOn = false
+  /// Live scan is reading the glasses' camera (true) or the phone camera (false).
+  private(set) var usingGlassesVideo = false
   @ObservationIgnored private var liveTask: Task<Void, Never>?
   @ObservationIgnored private var lastLiveText = ""
   @ObservationIgnored private var lastLiveCheck = Date.distantPast
@@ -166,10 +171,18 @@ final class CheckCoordinator {
   func startLiveScan() async {
     guard liveStatus == .off else { return }
     liveStatus = .starting
-    do { try await liveCamera.start() } catch {
-      liveStatus = .off
-      errorMessage = error.localizedDescription
-      return
+    usingGlassesVideo = false
+    if glasses.isConnected {
+      do { try await glasses.startLiveVideo(); usingGlassesVideo = true } catch {
+        NSLog("[SecondLook] glasses video failed, using phone camera: %@", error.localizedDescription)
+      }
+    }
+    if !usingGlassesVideo {
+      do { try await liveCamera.start() } catch {
+        liveStatus = .off
+        errorMessage = error.localizedDescription
+        return
+      }
     }
     lastLiveText = ""
     liveWarnings = []
@@ -186,14 +199,15 @@ final class CheckCoordinator {
   func stopLiveScan() {
     liveTask?.cancel()
     liveTask = nil
-    liveCamera.stop()
+    if usingGlassesVideo { glasses.stopLiveVideo() } else { liveCamera.stop() }
+    usingGlassesVideo = false
     liveStatus = .off
     liveBoxes = []
     liveWarnings = []
   }
 
   private func liveTick() async {
-    guard let frame = liveCamera.snapshot() else { return }
+    guard let frame = usingGlassesVideo ? glasses.videoSnapshot() : liveCamera.snapshot() else { return }
     let lines = await OfflineChecker.recognizeLines(in: frame.downscaled(maxSide: 1280), fast: true)
     guard liveStatus != .off else { return }
     liveFrameSize = frame.size
@@ -295,11 +309,45 @@ final class CheckCoordinator {
     return Double(wa.intersection(wb).count) / Double(wa.union(wb).count) > 0.6
   }
 
+  // MARK: Debug mirror (test builds only, opt-in in Settings)
+
+  #if DEBUG
+  @ObservationIgnored private var mirrorTask: Task<Void, Never>?
+  func setDebugMirror(_ on: Bool) {
+    mirrorTask?.cancel(); mirrorTask = nil
+    guard on else { return }
+    mirrorTask = Task { [weak self] in
+      while !Task.isCancelled {
+        guard let self else { return }
+        let frame: UIImage? = self.usingGlassesVideo ? self.glasses.videoSnapshot()
+          : (self.liveStatus != .off ? self.liveCamera.snapshot() : self.glasses.lastGlassesPhoto)
+        let g = self.glasses
+        let status: [String: String] = [
+          "source": self.usingGlassesVideo ? "glasses video" : (self.liveStatus != .off ? "phone camera" : (g.lastGlassesPhoto != nil ? "last glasses photo" : "none")),
+          "glasses": g.headerText,
+          "session": String(describing: g.sessionState),
+          "registration": String(describing: g.registrationState),
+          "device": g.deviceDiagnostics.isEmpty ? "none" : g.deviceDiagnostics,
+          "bluetooth audio": g.bluetoothAudioName ?? "none",
+          "last error": g.lastError ?? "none",
+          "listening": self.isListening ? "yes, via \(self.micName)" : "no",
+          "live scan": String(describing: self.liveStatus),
+          "always on": self.alwaysOn ? "on" : "off",
+          "last verdict": self.result.map { "\($0.verdict.rawValue): \($0.why)" } ?? "none",
+        ]
+        await self.api.postDebug(image: frame, status: status)
+        try? await Task.sleep(for: .milliseconds(900))
+      }
+    }
+  }
+  #endif
+
   // MARK: Always on
 
   private func syncAlwaysOn() {
     alwaysOnTask?.cancel()
     alwaysOnTask = nil
+    if liveFromAlwaysOn { stopLiveScan(); liveFromAlwaysOn = false }
     guard alwaysOn else {
       alwaysOnRunning = false
       if isListening { stopListening() }
@@ -311,15 +359,18 @@ final class CheckCoordinator {
 
     let watchesCamera = protections.contains { $0.usesCamera }
     guard watchesCamera else { return }
+    // Always on with glasses: run the live-scan engine on the glasses' video in the
+    // background (on-device reading twice a second, a check only when it matters, voice
+    // only on warnings). Without a glasses session it waits and retries.
     alwaysOnTask = Task { [weak self] in
       while !Task.isCancelled {
         guard let self else { return }
-        if self.glasses.isConnected, !self.isBusy {
-          if let image = try? await self.glasses.capturePhoto() {
-            self.deliver(await self.check(image: image, live: true), quiet: true)
-          }
+        if self.glasses.isConnected, self.liveStatus == .off {
+          await self.startLiveScan()
+          self.liveFromAlwaysOn = self.usingGlassesVideo
+          if !self.usingGlassesVideo { self.stopLiveScan() }
         }
-        try? await Task.sleep(for: Self.alwaysOnInterval)
+        try? await Task.sleep(for: .seconds(5))
       }
     }
   }

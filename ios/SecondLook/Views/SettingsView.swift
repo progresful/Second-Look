@@ -2,11 +2,13 @@ import SwiftUI
 import UIKit
 
 struct SettingsView: View {
+  @Environment(CheckCoordinator.self) private var coordinator
   @Environment(GlassesManager.self) private var glasses
   @Environment(\.dismiss) private var dismiss
   @AppStorage("apiBaseURL") private var apiBaseURL = ""
   @AppStorage("speechRate") private var speechRate: Double = 0.52
   @State private var voiceStatus = "…"
+  @AppStorage("debugMirror") private var debugMirror = false
   @AppStorage("consentGiven") private var consentGiven = true
   #if DEBUG
   @State private var mockOn = MockGlasses.isOn
@@ -19,9 +21,15 @@ struct SettingsView: View {
         Section("Glasses") {
           LabeledContent("Status", value: glasses.statusText)
           if glasses.isRegistered {
+            if !glasses.isConnected {
+              Button("Connect glasses") { glasses.refreshConnection() }
+            }
             Button("Disconnect glasses from Second Look", role: .destructive) { glasses.unregister() }
           } else {
             Button("Set up glasses") { glasses.register() }
+          }
+          if let error = glasses.lastError {
+            Text(error).font(.footnote).foregroundStyle(.secondary)
           }
         }
 
@@ -51,6 +59,15 @@ struct SettingsView: View {
         } header: { Text("Voice") } footer: {
           Text("Kokoro-82M runs on this iPhone. It downloads once (needs internet the first time), then works offline. Until then the iPhone voice is used.")
         }
+
+        #if DEBUG
+        Section {
+          Toggle("Mirror to debug viewer", isOn: $debugMirror)
+            .onChange(of: debugMirror) { _, on in coordinator.setDebugMirror(on) }
+        } header: { Text("Debug") } footer: {
+          Text("Sends the latest camera frame and status about once a second to \(APIClient.shared.baseURL.host() ?? "the server")/debug. Test builds only. Off by default.")
+        }
+        #endif
 
         Section {
           TextField("Default: \(APIClient.shared.baseURL.absoluteString)", text: $apiBaseURL)

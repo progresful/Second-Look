@@ -109,7 +109,7 @@ struct ContentView: View {
   private var stateText: String {
     if let r = coordinator.result { return r.summary }
     if coordinator.isBusy { return "Reading what you're looking at." }
-    if coordinator.isListening && !coordinator.alwaysOn { return "Listening to this call. I'll warn you about scam signs." }
+    if coordinator.isListening && !coordinator.alwaysOn { return "Listening through \(coordinator.micName). I'll warn you about scam signs." }
     if coordinator.alwaysOn {
       return "I check what you look at every 15 seconds and only speak up if something looks wrong."
     }
@@ -123,9 +123,9 @@ struct ContentView: View {
   private var header: some View {
     HStack(spacing: 8) {
       Circle()
-        .fill(glasses.isConnected ? Color.green : Color.white.opacity(0.5))
+        .fill(glasses.isConnected ? Color.green : glasses.bluetoothAudioName != nil ? Color.orange : Color.white.opacity(0.5))
         .frame(width: 8, height: 8)
-      Text(glasses.isConnected ? "glasses connected" : "glasses not connected")
+      Text(glasses.headerText).lineLimit(1)
         .font(.system(size: 15, weight: .medium))
         .opacity(0.85)
       Spacer()

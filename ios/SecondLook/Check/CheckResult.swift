@@ -63,6 +63,8 @@ struct CheckResult: Codable, Equatable {
 
   /// One short paragraph for the notification and the home screen.
   var summary: String {
+    let response = spoken.trimmingCharacters(in: .whitespacesAndNewlines)
+    if !response.isEmpty { return response }
     switch verdict {
     case .scam, .suspicious:
       let why = warnings.first?.explanation ?? reason
@@ -91,10 +93,12 @@ struct CheckResult: Codable, Equatable {
   }
 }
 
-/// What Second Look says out loud: short, conversational, never the same opener twice
-/// in a row, and no repeating the title inside the explanation.
+/// Preserve the analysis answer and specific failure/offline guidance.
+/// Stock wording is only a fallback for results without a spoken answer.
 extension CheckResult {
   func voiceLine(turn: Int) -> String {
+    let response = spoken.trimmingCharacters(in: .whitespacesAndNewlines)
+    if !response.isEmpty { return response }
     func pick(_ options: [String]) -> String { options[turn % options.count] }
     func sentence(_ s: String) -> String {
       let t = s.trimmingCharacters(in: .whitespaces)

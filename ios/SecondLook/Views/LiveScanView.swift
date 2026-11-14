@@ -4,12 +4,23 @@ import SwiftUI
 /// when it sees something worth checking. Warnings appear here, are spoken and notified.
 struct LiveScanView: View {
   @Environment(CheckCoordinator.self) private var coordinator
+  @Environment(GlassesManager.self) private var glasses
   @Environment(\.dismiss) private var dismiss
 
   var body: some View {
     ZStack {
       Color.black.ignoresSafeArea()
-      CameraPreview(session: coordinator.liveCamera.session).ignoresSafeArea()
+      if coordinator.usingGlassesVideo {
+        GeometryReader { geo in
+          if let frame = glasses.previewFrame {
+            Image(uiImage: frame).resizable().scaledToFill()
+              .frame(width: geo.size.width, height: geo.size.height).clipped()
+          }
+        }
+        .ignoresSafeArea()
+      } else {
+        CameraPreview(session: coordinator.liveCamera.session).ignoresSafeArea()
+      }
       LiveBoxesOverlay(boxes: coordinator.liveBoxes, frameSize: coordinator.liveFrameSize)
         .ignoresSafeArea()
         .allowsHitTesting(false)
@@ -60,7 +71,8 @@ struct LiveScanView: View {
   private var statusChip: some View {
     let (text, color): (String, Color) = switch coordinator.liveStatus {
     case .off, .starting: ("starting", .gray)
-    case .watching: coordinator.liveOffline ? ("watching · offline", .orange) : ("watching", .green)
+    case .watching: coordinator.liveOffline ? ("watching · offline", .orange)
+      : coordinator.usingGlassesVideo ? ("watching · glasses", .green) : ("watching", .green)
     case .reading: ("reading", .green)
     case .checking: coordinator.liveOffline ? ("checking · offline", .orange) : ("checking", .yellow)
     }

@@ -3,6 +3,7 @@ import SwiftUI
 
 @main
 struct SecondLookApp: App {
+  @Environment(\.scenePhase) private var scenePhase
   @State private var glasses: GlassesManager
   @State private var coordinator: CheckCoordinator
 
@@ -28,7 +29,15 @@ struct SecondLookApp: App {
       ContentView()
         .environment(glasses)
         .environment(coordinator)
-        .task { Speaker.shared.prepareWarmVoice() }
+        .task {
+          Speaker.shared.prepareWarmVoice()
+          #if DEBUG
+          if UserDefaults.standard.bool(forKey: "debugMirror") { coordinator.setDebugMirror(true) }
+          #endif
+        }
+        .onChange(of: scenePhase) { _, phase in
+          if phase == .active { glasses.refreshConnection() }
+        }
         // Meta AI app calls back here to finish registration and permission flows.
         .onOpenURL { url in
           #if DEBUG

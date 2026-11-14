@@ -18,6 +18,9 @@ final class PhoneListener {
 
   var onTranscript: ((String, Bool) -> Void)?
   private let engine = AVAudioEngine()
+  /// Which microphone feeds recognition, e.g. "Ray-Ban Display mic" or "iPhone mic".
+  private(set) var micName = ""
+  private(set) var usesGlassesMic = false
   private var request: SFSpeechAudioBufferRecognitionRequest?
   private var task: SFSpeechRecognitionTask?
   private let recognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
@@ -39,6 +42,15 @@ final class PhoneListener {
     try session.setCategory(.playAndRecord, mode: .measurement,
                             options: [.allowBluetoothHFP, .defaultToSpeaker, .duckOthers])
     try session.setActive(true)
+    // Prefer the glasses' microphone (Bluetooth) over the iPhone's own mic.
+    let btTypes: [AVAudioSession.Port] = [.bluetoothHFP, .bluetoothLE]
+    if let bt = session.availableInputs?.first(where: { btTypes.contains($0.portType) }) {
+      try? session.setPreferredInput(bt)
+    }
+    let port = session.currentRoute.inputs.first
+    usesGlassesMic = port.map { btTypes.contains($0.portType) } ?? false
+    micName = port.map { usesGlassesMic ? "\($0.portName) mic" : "iPhone mic" } ?? "no mic"
+    NSLog("[SecondLook] call listening mic: %@ (%@)", port?.portName ?? "-", port?.portType.rawValue ?? "-")
 
     let input = engine.inputNode
     let format = input.outputFormat(forBus: 0)

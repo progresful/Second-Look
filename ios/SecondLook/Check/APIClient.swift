@@ -47,6 +47,20 @@ struct APIClient {
     return result
   }
 
+  /// Debug mirror (test builds): latest frame + status for the team's viewer.
+  func postDebug(image: UIImage?, status: [String: String]) async {
+    var body: [String: Any] = ["status": status]
+    if let jpeg = image?.downscaled(maxSide: 720).jpegData(compressionQuality: 0.6) { body["image_base64"] = jpeg.base64EncodedString() }
+    var req = URLRequest(url: baseURL.appendingPathComponent("debug/frame"), timeoutInterval: 4)
+    req.httpMethod = "POST"
+    req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    if let token = Bundle.main.object(forInfoDictionaryKey: "SLAppToken") as? String, !token.isEmpty {
+      req.setValue(token, forHTTPHeaderField: "X-App-Token")
+    }
+    req.httpBody = try? JSONSerialization.data(withJSONObject: body)
+    _ = try? await URLSession.shared.data(for: req)
+  }
+
   /// Text check, used for call transcripts and the offline-OCR fallback when online.
   func analyzeText(_ text: String, timeout: TimeInterval = 8) async throws -> CheckResult {
     var result = try await post("analyze", body: ["text": text], timeout: timeout)

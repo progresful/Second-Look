@@ -8,7 +8,9 @@ import hmac
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
+import base64
+import time
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -73,6 +75,51 @@ def analyze_image(body: ImageIn):
     STATS["checks"] += 1
     STATS[result["verdict"]] += 1
     return result
+
+
+# ---------- debug mirror (team only) ----------
+# The app (test builds, opt-in toggle) posts its latest camera frame + status about once a
+# second. Only the newest one is kept, in memory. Reading it needs the app token too.
+DEBUG = {"frame": None, "status": {}, "at": 0.0}
+
+
+def _need_token(request: Request):
+    if not APP_TOKEN or not hmac.compare_digest(request.headers.get("x-app-token", ""), APP_TOKEN):
+        raise HTTPException(status_code=401, detail="Missing or wrong app token.")
+
+
+class DebugIn(BaseModel):
+    image_base64: str = Field("", max_length=3_000_000)
+    status: dict = Field(default_factory=dict)
+
+
+@app.post("/debug/frame")
+def debug_post(body: DebugIn, request: Request):
+    _need_token(request)
+    if body.image_base64:
+        DEBUG["frame"] = base64.b64decode(body.image_base64)
+    DEBUG["status"] = body.status
+    DEBUG["at"] = time.time()
+    return {"ok": True}
+
+
+@app.get("/debug/frame.jpg")
+def debug_frame(request: Request):
+    _need_token(request)
+    if not DEBUG["frame"]:
+        raise HTTPException(status_code=404, detail="No frame yet.")
+    return Response(DEBUG["frame"], media_type="image/jpeg", headers={"Cache-Control": "no-store"})
+
+
+@app.get("/debug/status")
+def debug_status(request: Request):
+    _need_token(request)
+    return {"age_s": round(time.time() - DEBUG["at"], 1) if DEBUG["at"] else None, **DEBUG["status"]}
+
+
+@app.get("/debug")
+def debug_page():
+    return FileResponse(ROOT / "static" / "debug.html", headers={"Cache-Control": "no-store"})
 
 
 @app.get("/health")

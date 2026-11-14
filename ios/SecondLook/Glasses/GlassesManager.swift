@@ -1,3 +1,4 @@
+import AVFoundation
 import Foundation
 import MWDATCamera
 import MWDATCore
@@ -60,6 +61,27 @@ final class GlassesManager {
   var isRegistered: Bool { registrationState == .registered }
   var isConnected: Bool { sessionState == .started }
 
+  /// Name of glasses (or any Bluetooth headset) connected for audio, even when the
+  /// Meta session (camera, display, capture button) isn't running.
+  private(set) var bluetoothAudioName: String?
+  /// Meta's toolkit says the glasses-side app must be updated in Meta AI first.
+  var needsGlassesAppUpdate: Bool { (lastError ?? "").localizedCaseInsensitiveContains("update") }
+
+  func refreshAudioRoute() {
+    let r = AVAudioSession.sharedInstance().currentRoute
+    let bt: [AVAudioSession.Port] = [.bluetoothA2DP, .bluetoothHFP, .bluetoothLE]
+    bluetoothAudioName = (r.outputs + r.inputs).first { bt.contains($0.portType) }?.portName
+  }
+
+  /// One line for the header.
+  var headerText: String {
+    if isConnected { return "glasses connected" }
+    if let name = bluetoothAudioName {
+      return needsGlassesAppUpdate ? "\(name.lowercased()) · audio only, update in Meta AI" : "\(name.lowercased()) · audio only"
+    }
+    return "glasses not connected"
+  }
+
   var statusText: String {
     if !sdkAvailable { return "Glasses unavailable (phone mode)" }
     if !isRegistered { return "Glasses not set up" }
@@ -87,9 +109,16 @@ final class GlassesManager {
     self.sdkAvailable = true
     self.registrationState = wearables.registrationState
     self.devices = wearables.devices
+    refreshAudioRoute()
+    NotificationCenter.default.addObserver(forName: AVAudioSession.routeChangeNotification, object: nil, queue: .main) { [weak self] _ in
+      Task { @MainActor in self?.refreshAudioRoute() }
+    }
     background.append(Task { [weak self] in
       for await state in wearables.registrationStateStream() {
-        self?.registrationState = state
+        guard let self else { return }
+        self.registrationState = state
+        // Discovery can arrive before registration finishes in the Meta AI app.
+        if state == .registered, !self.devices.isEmpty { self.connect() }
       }
     })
     background.append(Task { [weak self] in
@@ -103,6 +132,13 @@ final class GlassesManager {
   }
 
   // MARK: Registration (opens the Meta AI app, which calls back via secondlook://)
+
+  func refreshConnection() {
+    guard sdkAvailable else { return }
+    registrationState = wearables.registrationState
+    devices = wearables.devices
+    if isRegistered, !devices.isEmpty { connect() }
+  }
 
   func register() {
     guard sdkAvailable else { return }
@@ -124,7 +160,10 @@ final class GlassesManager {
     guard let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems,
           items.contains(where: { $0.name == "metaWearablesAction" }) else { return }
     Task {
-      do { _ = try await wearables.handleUrl(url) } catch { lastError = error.localizedDescription }
+      do {
+        _ = try await wearables.handleUrl(url)
+        refreshConnection()
+      } catch { lastError = error.localizedDescription }
     }
   }
 
@@ -153,11 +192,17 @@ final class GlassesManager {
   }
 
   private var hasReadyDevice: Bool {
-    devices.compactMap { wearables.deviceForIdentifier($0) }
-      .contains { $0.linkState == .connected && $0.compatibility() == .compatible }
+    readyDeviceIdentifier != nil
   }
 
-  private var deviceDiagnostics: String {
+  private var readyDeviceIdentifier: DeviceIdentifier? {
+    devices.first { identifier in
+      guard let device = wearables.deviceForIdentifier(identifier) else { return false }
+      return device.linkState == .connected && device.compatibility() == .compatible
+    }
+  }
+
+  var deviceDiagnostics: String {
     devices.compactMap { wearables.deviceForIdentifier($0) }
       .map { "\(String(describing: $0.linkState)), \(String(describing: $0.compatibility()))" }
       .joined(separator: "; ")
@@ -165,19 +210,29 @@ final class GlassesManager {
 
   private func openSession() {
     guard session == nil else { return }
+    guard let identifier = readyDeviceIdentifier else {
+      lastError = "Glasses are not ready: \(deviceDiagnostics)"
+      return
+    }
     do {
-      let session = try wearables.createSession(deviceSelector: AutoDeviceSelector(wearables: wearables))
+      // AutoDeviceSelector discovers asynchronously; a freshly created selector can
+      // still be empty even though wearables.devices already contains the glasses.
+      let selector = SpecificDeviceSelector(device: identifier)
+      let session = try wearables.createSession(deviceSelector: selector)
       self.session = session
       session.statePublisher.listen { [weak self] state in
         Task { @MainActor in self?.sessionChanged(state) }
       }.store(in: sessionTokens)
       session.errorPublisher.listen { [weak self] error in
+        NSLog("[SecondLook] glasses session error: %@ (%@)", error.localizedDescription, String(describing: error))
         Task { @MainActor in self?.lastError = error.localizedDescription }
       }.store(in: sessionTokens)
+      NSLog("[SecondLook] opening session on %@; device: %@", String(describing: identifier), deviceDiagnostics)
       sessionState = .starting
       try session.start()
     } catch {
-      lastError = "Couldn't connect: \(error.localizedDescription)"
+      lastError = "Couldn't connect: \(error.localizedDescription). Device: \(deviceDiagnostics)"
+      NSLog("[SecondLook] session failed: %@", lastError ?? "Unknown")
       teardown()
     }
   }
@@ -188,6 +243,7 @@ final class GlassesManager {
   }
 
   private func sessionChanged(_ state: DeviceSessionState) {
+    NSLog("[SecondLook] glasses session: %@; device: %@", String(describing: state), deviceDiagnostics)
     sessionState = state
     switch state {
     case .started:
@@ -240,8 +296,57 @@ final class GlassesManager {
 
   // MARK: Camera: one photo per check, stream stopped right after (privacy + battery)
 
+  // MARK: Live video: the glasses' camera stream feeds live scan (frames stay in memory only)
+
+  private(set) var liveVideoOn = false
+  /// Last single photo from the glasses (for the debug mirror).
+  @ObservationIgnored private(set) var lastGlassesPhoto: UIImage?
+  /// Latest frame for the on-screen preview (updated a few times a second).
+  private(set) var previewFrame: UIImage?
+  @ObservationIgnored private var lastPreviewAt = Date.distantPast
+  /// Thread-safe holder: frames arrive on a background thread.
+  final class FrameBox: @unchecked Sendable {
+    private let lock = NSLock(); private var image: UIImage?
+    func set(_ i: UIImage?) { lock.lock(); image = i; lock.unlock() }
+    func get() -> UIImage? { lock.lock(); defer { lock.unlock() }; return image }
+  }
+  nonisolated let frameBox = FrameBox()
+
+  func startLiveVideo() async throws {
+    guard let session, sessionState == .started else { throw GlassesError.notConnected }
+    if try await wearables.checkPermissionStatus(.camera) != .granted {
+      guard try await wearables.requestPermission(.camera) == .granted else { throw GlassesError.permissionDenied }
+    }
+    try startStream(on: session)
+    let box = frameBox
+    camera?.stream.videoFramePublisher.listen { [weak self] frame in
+      guard let image = frame.makeUIImage() else { return }
+      box.set(image)
+      Task { @MainActor in
+        guard let self, self.liveVideoOn, Date().timeIntervalSince(self.lastPreviewAt) > 0.12 else { return }
+        self.lastPreviewAt = Date(); self.previewFrame = image
+      }
+    }.store(in: streamTokens)
+    try await waitForStreaming(timeout: .seconds(6))
+    liveVideoOn = true
+    NSLog("[SecondLook] glasses live video on")
+  }
+
+  func stopLiveVideo() {
+    guard liveVideoOn || camera != nil else { return }
+    liveVideoOn = false
+    frameBox.set(nil)
+    previewFrame = nil
+    stopStream()
+  }
+
+  /// The newest glasses frame, or nil before the first one arrives.
+  nonisolated func videoSnapshot() -> UIImage? { frameBox.get() }
+
   func capturePhoto(timeout: Duration = .seconds(8)) async throws -> UIImage {
     guard let session, sessionState == .started else { throw GlassesError.notConnected }
+    // While live video runs, the newest frame is the photo (don't stop the stream).
+    if liveVideoOn, let frame = videoSnapshot() { return frame }
     if try await wearables.checkPermissionStatus(.camera) != .granted {
       guard try await wearables.requestPermission(.camera) == .granted else { throw GlassesError.permissionDenied }
     }
@@ -264,6 +369,7 @@ final class GlassesManager {
       }
     }
     guard let image = UIImage(data: data) else { throw GlassesError.captureFailed }
+    lastGlassesPhoto = image
     return image
   }
 
