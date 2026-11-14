@@ -134,7 +134,11 @@ def analyze_image(image_b64: str, mime: str = "image/jpeg", live: bool = False, 
     else:
         verdict = "looks_ok"
     top = sorted([s for s in res["signals"] if s["weight"] > 0], key=lambda s: -s["weight"])
-    reason = (top[0]["explanation"] if top else g["reason"]) if verdict in ("scam", "suspicious") else (
+    # Gemini saw this exact message, so its sentence names the real sender and sign; the fixed
+    # rule text is only the fallback (it can't know whether it's a bank or Netflix).
+    gem = (g.get("reason") or "").strip()
+    reason = (gem if gem and not gem.lower().startswith(("i can", "unreadable", "the image")) else
+              (top[0]["explanation"] if top else gem)) if verdict in ("scam", "suspicious") else (
         "I couldn't read it. Hold it closer and steady." if verdict == "not_sure" else "")
     out = _result(verdict, round(min(1.0, abs(score - SUSPICIOUS_AT) / SCAM_AT), 2), res["signals"], reason,
                   started, res["redacted_text"], llm_used=True, model=g.get("model"))

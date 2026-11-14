@@ -118,7 +118,7 @@ extension CheckResult {
   /// One sentence on why.
   var why: String {
     switch verdict {
-    case .scam, .suspicious: return warnings.first?.explanation ?? reason
+    case .scam, .suspicious: return reason.isEmpty ? (warnings.first?.explanation ?? "") : reason
     case .looks_ok: return "If something still feels off, check with the official number."
     case .not_sure: return spoken
     }

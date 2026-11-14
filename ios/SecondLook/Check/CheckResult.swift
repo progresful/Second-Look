@@ -106,7 +106,7 @@ extension CheckResult {
       return ".!?".contains(last) ? t : t + "."
     }
     let signs = warnings
-    let why = sentence(signs.first?.explanation ?? reason)
+    let why = sentence(reason.isEmpty ? (signs.first?.explanation ?? "") : reason)
 
     switch verdict {
     case .scam:

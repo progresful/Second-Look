@@ -20,7 +20,7 @@ class Technique:
 TECHNIQUES: List[Technique] = [
     Technique(
         "credential_request", "Asks for codes or passwords", 0.9,
-        "Real banks and authorities never ask for PINs, passwords or banking codes by message.",
+        "Real companies and banks never ask for your password, codes or card details by message or email.",
         [r"\b(pin|password|passcode|verification code|one[- ]time code|bank(ing)? (codes?|id|credentials)|card details|read me the code|tell me the code)\b",
          r"\b(tunnusluku|salasana|pankkitunnu\w*|vahvistuskoodi\w*|varmenn\w*koodi\w*|tunnuksesi)\b"],
     ),
@@ -44,7 +44,7 @@ TECHNIQUES: List[Technique] = [
     ),
     Technique(
         "authority_claim", "Claims to be an authority or brand", 0.25,
-        "Mentions a bank, delivery firm or authority. Not a scam sign alone, but check the sender is real.",
+        "Uses a well-known company or authority name. Not a scam sign alone, but check it really comes from them.",
         [r"\b(bank|police|tax (office|administration)|customs|microsoft|apple support|dhl|ups|fedex|amazon)\b",
          r"\b(pankki|poliisi|verohallinto|vero|tulli|posti|kela|op|nordea|danske|s-pankki|aktia|mobilepay)\b"],
     ),

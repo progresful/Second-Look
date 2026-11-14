@@ -26,7 +26,9 @@ INSTRUCTIONS = """You check messages, web pages and documents for scams, for old
 Use only these technique ids: {ids}.
 Quote short evidence exactly as it appears. If it looks like a normal legitimate notice or shop,
 return no techniques and a low scam_likelihood. Do not guess: if unreadable, say so in reason.
-reason: one plain sentence a 75-year-old understands."""
+reason: one plain sentence a 75-year-old understands. Name who the message claims to be from
+(e.g. "This Netflix-style email...") and the main warning sign you actually see. Never mention a
+bank, company or authority that is not in the image or text."""
 
 # Live frames: the phone already read the text on-device, so Gemini only judges and
 # locates. Not transcribing cuts the answer from ~400 to ~100 tokens (6 s -> ~2-3 s).

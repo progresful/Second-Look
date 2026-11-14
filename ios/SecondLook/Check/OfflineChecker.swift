@@ -16,7 +16,7 @@ enum OfflineChecker {
 
   private static let rules: [Rule] = [
     Rule(id: "credential_request", label: "Asks for codes or passwords", weight: 0.9,
-         explanation: "Real banks never ask for codes or passwords by message or phone.",
+         explanation: "Real companies and banks never ask for codes, passwords or card details by message.",
          pattern: #"\b(pin|password|banking codes?|bank credentials|card details|read me the code|tunnusluku|pankkitunnu\w*|vahvistuskoodi\w*)\b"#),
     Rule(id: "unusual_payment", label: "Unusual payment method", weight: 0.8,
          explanation: "Gift cards, crypto or a 'safe account' are classic scam payments.",
