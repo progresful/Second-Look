@@ -1,0 +1,175 @@
+{
+ "sms": {
+  "verdict": "scam",
+  "reason": "This delivery message is a scam trying to rush you into clicking a suspicious web link to resolve a pretend address problem.",
+  "boxes": [
+   {
+    "b": [
+     444,
+     422,
+     467,
+     508
+    ],
+    "l": "False urgency",
+    "e": "within 24 hours to avoid it being returned"
+   },
+   {
+    "b": [
+     477,
+     422,
+     492,
+     508
+    ],
+    "l": "Pushes you to a link",
+    "e": "post-delivery-status.com"
+   },
+   {
+    "b": [
+     494,
+     422,
+     507,
+     483
+    ],
+    "l": "Small fee to release something",
+    "e": "Fees may apply."
+   }
+  ],
+  "signs": [
+   "False urgency",
+   "Small fee to release something"
+  ]
+ },
+ "gmail": {
+  "verdict": "scam",
+  "reason": "This email claiming to be from a security team is a scam trying to trick you into clicking a link and giving away your details by threatening to permanently suspend your account within 24 hours.",
+  "boxes": [
+   {
+    "b": [
+     465,
+     444,
+     477,
+     563
+    ],
+    "l": "False urgency",
+    "e": "URGENT: Your account has been restricted - Action Required"
+   },
+   {
+    "b": [
+     550,
+     499,
+     566,
+     535
+    ],
+    "l": "Pushes you to a link",
+    "e": "Verify My Account"
+   },
+   {
+    "b": [
+     570,
+     443,
+     580,
+     588
+    ],
+    "l": "Threat or fear appeal",
+    "e": "If you do not complete this verification within 24 hours, your account may be permanently suspended."
+   },
+   {
+    "b": [
+     531,
+     443,
+     545,
+     584
+    ],
+    "l": "Asks for codes or passwords",
+    "e": "To restore your account and verify your identity, you must immediately click the link below and update your details."
+   }
+  ],
+  "signs": [
+   "False urgency",
+   "Pushes you to a link",
+   "Threat or fear appeal",
+   "Asks for codes or passwords"
+  ]
+ },
+ "bank": {
+  "verdict": "scam",
+  "reason": "This Bank of America-style message asks you to immediately reset your password using a suspicious web link.",
+  "boxes": [
+   {
+    "b": [
+     287,
+     419,
+     329,
+     673
+    ],
+    "l": "Claims to be an authority or brand",
+    "e": "Bank of America"
+   },
+   {
+    "b": [
+     566,
+     355,
+     673,
+     706
+    ],
+    "l": "Lookalike domain",
+    "e": "https://trust.ameribank7.com/reset-password"
+   },
+   {
+    "b": [
+     531,
+     469,
+     588,
+     866
+    ],
+    "l": "Asks for codes or passwords",
+    "e": "please reset your password immediately with this link:"
+   },
+   {
+    "b": [
+     531,
+     638,
+     588,
+     755
+    ],
+    "l": "False urgency",
+    "e": "immediately"
+   }
+  ],
+  "signs": [
+   "Asks for codes or passwords",
+   "False urgency",
+   "Lookalike domain"
+  ]
+ },
+ "shop": {
+  "verdict": "scam",
+  "reason": "This website pretends to be the official Ray-Ban store, but it uses a fake domain name (ray-band.com) and offers designer sunglasses for an suspiciously low price of EUR9.90.",
+  "boxes": [
+   {
+    "b": [
+     147,
+     169,
+     166,
+     542
+    ],
+    "l": "Lookalike domain",
+    "e": "www.ray-band.com"
+   },
+   {
+    "b": [
+     842,
+     563,
+     856,
+     610
+    ],
+    "l": "Price far below normal",
+    "e": "EUR9.90"
+   }
+  ],
+  "signs": [
+   "Lookalike domain",
+   "Price far below normal"
+  ]
+ }
+}

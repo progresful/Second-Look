@@ -213,13 +213,71 @@ footer{border-top:1px solid var(--line);padding:40px 0 60px;font-size:12px;color
 footer h4{color:var(--ink);font-size:12px;font-weight:600;margin-bottom:6px}
 footer .cols{display:grid;grid-template-columns:1fr 1fr;gap:40px}
 @media(max-width:900px){.story{grid-template-columns:1fr}.phonecol{display:none}.flow{grid-template-columns:1fr}footer .cols{grid-template-columns:1fr}}
+
+/* ---------- try it: glasses simulator ---------- */
+.try{padding:14vh 0 10vh}
+.try .head{text-align:center;max-width:820px;margin:0 auto 46px}
+.try .head h2{font-size:clamp(40px,4.6vw,72px);font-weight:700;letter-spacing:-.035em;line-height:1.04;margin-top:10px}
+.try .head p{margin-top:14px;color:var(--dim2);font-size:clamp(18px,1.4vw,22px);line-height:1.45}
+.sim{display:grid;grid-template-columns:1fr 300px;gap:40px;align-items:center}
+.sim-lens{position:relative;aspect-ratio:16/10;border-radius:28px;overflow:hidden;background:#000;perspective:900px}
+.sim-look,.sim-head{position:absolute;inset:-4%;}
+.sim-cam{position:absolute;will-change:transform}
+.sim-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.86) contrast(1.06)}
+.sim-boxes{position:absolute;inset:0}
+.sim-bx{position:absolute;border:2.5px solid var(--red);border-radius:8px;background:rgba(255,69,58,.12);box-shadow:0 0 22px rgba(255,69,58,.4)}
+.sim-bx b{position:absolute;left:-2px;bottom:calc(100% + 5px);white-space:nowrap;background:var(--red);color:#fff;font-size:12px;font-weight:600;padding:3px 8px;border-radius:6px}
+.sim-bx.amber{border-color:var(--amber);background:rgba(255,159,10,.12)} .sim-bx.amber b{background:var(--amber);color:#111}
+.sim-vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 46% 50% at 50% 50%,rgba(0,0,0,0) 72%,rgba(0,0,0,.75) 90%,#000 100%)}
+.sim-scan{position:absolute;left:0;right:0;height:22%;top:-25%;background:linear-gradient(180deg,rgba(255,214,10,0),rgba(255,214,10,.14),rgba(255,214,10,0));pointer-events:none;opacity:0}
+.sim-status{position:absolute;left:50%;top:6%;transform:translateX(-50%);display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:99px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:rgba(0,0,0,.45);backdrop-filter:blur(10px);color:rgba(255,255,255,.85)}
+.sim-status:empty{display:none}
+.sim-status::before{content:"";width:7px;height:7px;border-radius:50%;background:#8e8e93}
+.sim-status.live::before{background:var(--green)} .sim-status.checking::before{background:var(--yel)}
+.sim-status.scam::before{background:var(--red)} .sim-status.suspicious::before{background:var(--amber)}
+.sim-hud{position:absolute;right:13%;top:30%;width:min(250px,30%);padding:14px 16px;border-radius:18px;background:rgba(18,20,26,.6);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.18);opacity:0;font-size:13px}
+.sim-hud .h{display:flex;align-items:center;gap:7px;font-weight:700;letter-spacing:.06em;font-size:11px}
+.sim-hud .a{font-size:20px;font-weight:600;letter-spacing:-.02em;margin:6px 0 4px}
+.sim-hud .w{color:rgba(255,255,255,.7);font-size:12px}
+.sim-line{min-height:3.2em;margin:18px auto 0;max-width:900px;text-align:center;font-size:clamp(17px,1.4vw,21px);line-height:1.45;color:var(--ink)}
+.sim-call{position:absolute;inset:0;display:none;background:radial-gradient(ellipse at 50% 40%,#2a2440,#0b0b10 70%)}
+.sim-call.on{display:block}
+.sim-hand{position:absolute;left:50%;top:9%;transform:translateX(-50%);width:min(240px,34%);aspect-ratio:9/19;border-radius:34px;background:#111;box-shadow:0 0 0 2px #2c2c30,0 30px 80px rgba(0,0,0,.6);padding:10px}
+.sim-hand .scr{width:100%;height:100%;border-radius:26px;background:linear-gradient(180deg,#3a3f55,#1b1d26);display:flex;flex-direction:column;align-items:center;padding:22% 8% 0;color:#fff;text-align:center}
+.sim-hand .who{font-size:18px;font-weight:600}.sim-hand .num{font-size:12px;opacity:.7;margin-top:4px}.sim-timer{font-size:13px;opacity:.75;margin-top:10px}
+.sim-call.alarm .scr{background:linear-gradient(180deg,#5b1f22,#1b1d26)}
+.sim-captions{position:absolute;left:6%;bottom:9%;width:36%;display:flex;flex-direction:column;gap:8px}
+.sim-captions p{font-family:var(--serif);font-style:italic;font-size:15px;line-height:1.35;padding:9px 12px;border-radius:12px;background:rgba(255,255,255,.08);color:#eee}
+.sim-placeholder{position:absolute;right:3%;bottom:3%;font-size:11px;color:rgba(255,255,255,.4)}
+.sim-phone{width:100%;aspect-ratio:390/844;border-radius:46px;padding:10px;background:#0b0b0d;box-shadow:0 0 0 1.5px #2c2c30,0 40px 100px rgba(0,0,0,.6)}
+.sim-screen{position:relative;height:100%;border-radius:36px;overflow:hidden;padding:20% 7% 6%;color:#fff;background:linear-gradient(160deg,#5b7cff,#2cc3ff 55%,#b06cff);transition:background 1s}
+.sim-screen[data-mood=checking]{background:linear-gradient(160deg,#4b2ce0,#2cc3ff 55%,#b06cff)}
+.sim-screen[data-mood=listening]{background:linear-gradient(160deg,#6a2ce0,#d06cff 55%,#3a6bff)}
+.sim-screen[data-mood=scam]{background:linear-gradient(160deg,#e5231b,#ff7a3d 55%,#ff3d7f)}
+.sim-screen[data-mood=careful]{background:linear-gradient(160deg,#f08a00,#ffc233 55%,#ff6a3d)}
+.sim-screen .top{position:absolute;top:6%;left:7%;right:7%;display:flex;justify-content:space-between;font-size:12px;opacity:.9}
+.sim-word{font-family:var(--serif);font-size:34px;line-height:1}
+.sim-para{font-size:13px;line-height:1.35;opacity:.93;margin-top:6px;min-height:3.4em}
+.sim-lbl{font-size:10px;letter-spacing:.14em;opacity:.75;margin:16px 0 8px}
+.sim-chips{display:flex;flex-wrap:wrap;gap:7px}
+.sim-chip{font:inherit;font-size:13px;font-weight:500;color:#fff;padding:7px 12px;border-radius:99px;border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.12);cursor:pointer;transition:background .2s,color .2s}
+.sim-chip:hover{background:rgba(255,255,255,.25)} .sim-chip.sel{background:#fff;color:#111;border-color:#fff;font-weight:600}
+.sim-mode{display:inline-flex;margin-top:14px;padding:3px;border-radius:99px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);font:inherit;font-size:12px;font-weight:600;color:#fff;cursor:pointer;position:relative}
+.sim-mode span{padding:6px 12px;border-radius:99px;transition:background .3s,color .3s} .sim-mode span.sel{background:#fff;color:#111}
+.sim-check{position:absolute;right:7%;bottom:5%;font:inherit;font-size:15px;font-weight:500;background:#fff;color:#111;border:0;border-radius:99px;padding:9px 18px;cursor:pointer}
+.sim-check.pulse{animation:simpulse 1.4s infinite}
+@keyframes simpulse{0%{box-shadow:0 0 0 0 rgba(255,255,255,.7)}70%{box-shadow:0 0 0 12px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
+.sim-card{display:none;margin-top:12px;font-size:12px;padding:1em;border-radius:1.2em;background:rgba(219,38,38,.6)}
+.sim-card.amber{background:rgba(235,120,20,.6)}
+.sim-card .act{font-size:20px;margin:.3em 0}
+@media(max-width:900px){.sim{grid-template-columns:1fr}.sim-phone{max-width:340px;margin:0 auto}.sim-captions{width:60%;left:4%}.sim-hud{display:none}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 
 <nav>
-  <ul><li><a href="#problem">Problem</a></li><li><a href="#calls">Calls</a></li><li><a href="#how">How it works</a></li><li><a href="#features">Features</a></li><li><a href="#why">Why us</a></li></ul>
+  <ul><li><a href="#try">Try it</a></li><li><a href="#problem">Problem</a></li><li><a href="#calls">Calls</a></li><li><a href="#how">How it works</a></li><li><a href="#features">Features</a></li><li><a href="#why">Why us</a></li></ul>
   <a class="brand" href="#top"><img src="media/icon.png" alt="">Second Look</a>
   <a class="navcta" href="#how">See how</a>
 </nav>
@@ -257,6 +315,37 @@ footer .cols{display:grid;grid-template-columns:1fr 1fr;gap:40px}
   <div class="scrollcue" aria-hidden="true"></div>
   <div class="divehint" aria-hidden="true">Scroll to put them on</div>
 </header>
+
+<section class="try wrap" id="try">
+  <div class="head"><span class="eyebrow">Try it</span><h2>See it through the glasses.</h2>
+    <p>Pick what to guard on the phone. The glasses view shows a real example and what Second Look finds.</p></div>
+  <div class="sim">
+    <div>
+      <div class="sim-lens">
+        <div class="sim-look"><div class="sim-head"><div class="sim-cam"><img class="sim-img" alt="First-person view through the glasses"><div class="sim-boxes"></div></div></div></div>
+        <div class="sim-scan"></div>
+        <div class="sim-call" aria-label="Phone call held in hand">
+          <div class="sim-hand"><div class="scr"><div class="who">Bank Security</div><div class="num">+358 9 4200 0000</div><div class="sim-timer">0:00</div></div></div>
+          <div class="sim-captions" aria-live="polite"></div>
+          <div class="sim-placeholder">placeholder · your photo goes here</div>
+        </div>
+        <div class="sim-vig"></div>
+        <span class="sim-status"></span>
+        <div class="sim-hud" aria-hidden="true"><div class="h"><svg width="14" height="14" viewBox="0 0 24 24" fill="#FF453A"><path d="M12 2 1 21h22L12 2zm1 15h-2v-2h2v2zm0-4h-2V9h2v4z"/></svg><span>LIKELY SCAM</span></div><div class="a">Don't pay or reply.</div><div class="w"></div></div>
+      </div>
+      <p class="sim-line" aria-live="polite"></p>
+    </div>
+    <div class="sim-phone"><div class="sim-screen" data-mood="calm">
+      <div class="top"><span>● glasses connected</span><span style="font-family:var(--serif)">second look</span></div>
+      <div class="sim-word">ready</div><div class="sim-para"></div>
+      <div class="sim-lbl">PROTECT ME FROM</div><div class="sim-chips" role="radiogroup" aria-label="What to guard"></div>
+      <button class="sim-mode on" aria-label="Checking mode"><span>on request</span><span class="sel">always on</span></button>
+      <div class="card sim-card"><div class="ch"><b>!</b><span>LIKELY SCAM</span></div><div class="act"></div><div class="cwhy"></div><div class="cps"></div></div>
+      <button class="sim-check">check</button>
+    </div></div>
+  </div>
+  <p class="src" style="text-align:center;margin-top:26px">Boxes, verdicts and explanations are Second Look's real output for these images. The call is scripted.</p>
+</section>
 
 <section class="statement wrap">
   <h2>Scams don't stay in the inbox.</h2>
@@ -542,5 +631,6 @@ toggle.onclick=()=>{ stopAll(); const on=!alwaysOn; setToggle(on); mood(on?'chec
 [...plist].forEach(d=>d.onclick=()=>{ stopAll(); d.classList.toggle('off'); });
 go('ready'); syncPhone();
 </script>
+<script src="sim.js"></script>
 </body>
 </html>

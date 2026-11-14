@@ -1,0 +1,190 @@
+/* Second Look "Try it" simulator: glasses view (left) + app (right), no install needed.
+   Stills become a first-person "video": zoom in on load, slow head-like drift, mouse parallax.
+   Boxes, verdicts and one-line reasons are Second Look's real output for each image
+   (media/sim/detections.json, produced by the live server). */
+(() => {
+  const root = document.getElementById('try'); if (!root) return;
+  const $ = s => root.querySelector(s);
+  const lens = $('.sim-lens'), cam = $('.sim-cam'), img = $('.sim-img'), boxes = $('.sim-boxes'),
+        scan = $('.sim-scan'), hud = $('.sim-hud'), line = $('.sim-line'), chip = $('.sim-status'),
+        callView = $('.sim-call'), chips = $('.sim-chips'), modeBtn = $('.sim-mode'), checkBtn = $('.sim-check'),
+        word = $('.sim-word'), para = $('.sim-para'), card = $('.sim-card'), screen = $('.sim-screen');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const SCENES = {
+    messages: { label: 'messages', img: 'media/sim/sms.jpg', key: 'sms', from: 'a delivery text' },
+    emails:   { label: 'emails', img: 'media/sim/gmail.jpg', key: 'gmail', from: 'an email' },
+    websites: { label: 'websites', img: 'media/sim/bank.jpg', key: 'bank', from: 'a web page' },
+    webshops: { label: 'webshops', img: 'media/sim/shop.jpg', key: 'shop', from: 'a webshop' },
+    letters:  { label: 'letters & bills', img: null, soon: true },
+    qr:       { label: 'qr codes', img: null, soon: true },
+    calls:    { label: 'phone calls', call: true },
+  };
+  const ORDER = ['messages', 'emails', 'websites', 'webshops', 'letters', 'qr', 'calls'];
+  let DET = {}, current = null, alwaysOn = true, tl = null, drift = null, timers = [];
+  const later = (ms, f) => timers.push(setTimeout(f, ms));
+  const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
+
+  // ---- app side: single-select chips ----
+  ORDER.forEach(k => {
+    const b = document.createElement('button');
+    b.className = 'sim-chip'; b.textContent = SCENES[k].label; b.dataset.k = k;
+    b.onclick = () => select(k, true); chips.appendChild(b);
+  });
+  modeBtn.onclick = () => {
+    alwaysOn = !alwaysOn; modeBtn.classList.toggle('on', alwaysOn);
+    modeBtn.querySelectorAll('span').forEach((s, i) => s.classList.toggle('sel', i === (alwaysOn ? 1 : 0)));
+    select(current, false);
+  };
+  checkBtn.onclick = () => { if (current && !SCENES[current].call) detect(); else if (current) runCall(true); };
+
+  // ---- the "video": cover-fit the still, then zoom + drift + parallax ----
+  function fit() {
+    const W = lens.clientWidth, H = lens.clientHeight, ar = (img.naturalWidth || 16) / (img.naturalHeight || 9);
+    let w = W, h = W / ar; if (h < H) { h = H; w = H * ar; }
+    Object.assign(cam.style, { width: w + 'px', height: h + 'px', left: (W - w) / 2 + 'px', top: (H - h) / 2 + 'px' });
+  }
+  function focusOf(det) {            // centre of all detected boxes (0-1), and how far to zoom
+    if (!det || !det.boxes.length) return { x: .5, y: .5, z: 1.35 };
+    let y0 = 1, x0 = 1, y1 = 0, x1 = 0;
+    det.boxes.forEach(({ b }) => { y0 = Math.min(y0, b[0] / 1000); x0 = Math.min(x0, b[1] / 1000); y1 = Math.max(y1, b[2] / 1000); x1 = Math.max(x1, b[3] / 1000); });
+    const span = Math.max(x1 - x0, (y1 - y0) * 1.3, .18);
+    return { x: (x0 + x1) / 2, y: (y0 + y1) / 2, z: Math.min(2.6, Math.max(1.3, .62 / span)) };
+  }
+  function zoomTo(f, dur) {           // scale around the cam's top-left, then centre the focus point
+    const W = lens.clientWidth, H = lens.clientHeight, w = cam.clientWidth, h = cam.clientHeight;
+    const L = parseFloat(cam.style.left), T = parseFloat(cam.style.top);
+    let x = W / 2 - L - f.x * w * f.z, y = H * .46 - T - f.y * h * f.z;
+    // keep the image covering the lens
+    x = Math.min(-L, Math.max(W - L - w * f.z, x)); y = Math.min(-T, Math.max(H - T - h * f.z, y));
+    return gsap.to(cam, { scale: f.z, x, y, transformOrigin: '0 0', duration: dur, ease: 'power3.inOut' });
+  }
+  function startDrift() {              // slow, irregular head movement
+    if (drift) drift.kill(); if (reduce) return;
+    drift = gsap.timeline({ repeat: -1, yoyo: true, defaults: { ease: 'sine.inOut' } })
+      .to('.sim-head', { x: 14, y: -8, rotation: .5, duration: 3.6 })
+      .to('.sim-head', { x: -10, y: 6, rotation: -.4, duration: 4.2 })
+      .to('.sim-head', { x: 6, y: 10, rotation: .2, duration: 3.1 });
+  }
+  lens.addEventListener('pointermove', e => {
+    if (reduce) return; const r = lens.getBoundingClientRect();
+    const dx = (e.clientX - r.left) / r.width - .5, dy = (e.clientY - r.top) / r.height - .5;
+    gsap.to('.sim-look', { x: -dx * 46, y: -dy * 30, rotationY: dx * 4, rotationX: -dy * 3, duration: .9, ease: 'power2.out' });
+  });
+  lens.addEventListener('pointerleave', () => gsap.to('.sim-look', { x: 0, y: 0, rotationX: 0, rotationY: 0, duration: 1.2, ease: 'power2.out' }));
+
+  // ---- states ----
+  function setApp(state, text, verdict) {
+    word.textContent = state; para.textContent = text;
+    screen.dataset.mood = verdict === 'scam' ? 'scam' : verdict === 'suspicious' ? 'careful' : state === 'listening' ? 'listening' : state === 'checking' ? 'checking' : 'calm';
+  }
+  function resetView() {
+    clearTimers(); if (tl) tl.kill();
+    gsap.killTweensOf([cam, hud, card, line, scan]);
+    boxes.innerHTML = ''; gsap.set(hud, { opacity: 0, y: 10 }); gsap.set(card, { opacity: 0, y: 14, display: 'none' });
+    line.textContent = ''; chip.textContent = ''; chip.className = 'sim-status';
+  }
+  function select(k, user) {
+    if (!k) return; current = k; const sc = SCENES[k];
+    chips.querySelectorAll('.sim-chip').forEach(b => b.classList.toggle('sel', b.dataset.k === k));
+    resetView();
+    callView.classList.toggle('on', !!sc.call); lens.classList.toggle('calling', !!sc.call);
+    if (sc.call) { runCall(alwaysOn); return; }
+    if (sc.soon) {
+      img.removeAttribute('src'); gsap.set(cam, { scale: 1, x: 0, y: 0 });
+      setApp('ready', 'Example for ' + sc.label + ' coming soon. Try another one.');
+      line.textContent = 'Example coming soon: pick messages, emails, websites, webshops or phone calls.';
+      return;
+    }
+    gsap.set(cam, { scale: 1, x: 0, y: 0, opacity: 0 });
+    img.onload = () => {
+      fit(); gsap.to(cam, { opacity: 1, duration: .5 });
+      setApp(alwaysOn ? 'watching' : 'ready', alwaysOn ? 'I check what you look at and only speak up if something looks wrong.' : 'Look at it and tap check, or press the capture button on your glasses.');
+      chip.textContent = alwaysOn ? 'watching' : 'ready'; chip.className = 'sim-status ' + (alwaysOn ? 'live' : '');
+      tl = gsap.timeline();
+      tl.add(zoomTo(focusOf(DET[sc.key]), reduce ? 0 : 1.8), .25).add(startDrift, '>-0.2');
+      if (alwaysOn) later(reduce ? 0 : 2300, detect);
+      else { checkBtn.classList.add('pulse'); line.textContent = 'On request: tap check (or press the capture button on the glasses).'; }
+    };
+    img.src = sc.img;
+  }
+  function detect() {
+    const sc = SCENES[current], det = DET[sc.key]; if (!det) return;
+    checkBtn.classList.remove('pulse');
+    chip.textContent = 'checking'; chip.className = 'sim-status checking';
+    setApp('checking', "Reading what you're looking at.");
+    gsap.fromTo(scan, { top: '-25%', opacity: 1 }, { top: '110%', duration: reduce ? 0 : 1.1, ease: 'power1.inOut', onComplete: () => gsap.set(scan, { opacity: 0 }) });
+    later(reduce ? 0 : 1200, () => {
+      boxes.innerHTML = '';
+      const seen = new Set();
+      det.boxes.forEach(({ b, l }) => {
+        const d = document.createElement('div'); d.className = 'sim-bx' + (det.verdict === 'suspicious' ? ' amber' : '');
+        d.style.cssText = `left:${b[1] / 10 - .6}%;top:${b[0] / 10 - .8}%;width:${(b[3] - b[1]) / 10 + 1.2}%;height:${(b[2] - b[0]) / 10 + 1.6}%`;
+        if (!seen.has(l)) { seen.add(l); d.innerHTML = `<b>${l}</b>`; }
+        boxes.appendChild(d);
+      });
+      gsap.fromTo(boxes.children, { opacity: 0, scale: 1.25 }, { opacity: 1, scale: 1, duration: .45, stagger: .16, ease: 'back.out(1.8)' });
+      const word2 = det.verdict === 'scam' ? 'LIKELY SCAM' : det.verdict === 'suspicious' ? 'BE CAREFUL' : 'NO SCAM SIGNS';
+      showHud(word2, det.verdict === 'scam' ? "Don't pay or reply." : 'Check before you pay.', det.signs.slice(0, 2).join(' · '), det.verdict);
+      chip.textContent = word2.toLowerCase(); chip.className = 'sim-status ' + det.verdict;
+      typeLine(det.reason);
+      setApp(word2.toLowerCase(), det.reason, det.verdict);
+      showCard(word2, det.verdict === 'scam' ? "Don't pay or reply." : 'Check before you pay.', det.reason, det.signs.slice(0, 3), det.verdict);
+    });
+  }
+  function showHud(w, a, s, verdict) {
+    hud.querySelector('.h span').textContent = w; hud.querySelector('.a').textContent = a; hud.querySelector('.w').textContent = s;
+    hud.querySelector('svg').setAttribute('fill', verdict === 'suspicious' ? '#FF9F0A' : '#FF453A');
+    gsap.to(hud, { opacity: 1, y: 0, duration: .6, delay: .5, ease: 'power3.out' });
+  }
+  function showCard(w, a, why, signs, verdict) {
+    card.className = 'card sim-card' + (verdict === 'suspicious' ? ' amber' : '');
+    card.querySelector('.ch span').textContent = w; card.querySelector('.act').textContent = a;
+    card.querySelector('.cwhy').textContent = why;
+    card.querySelector('.cps').innerHTML = signs.map(x => `<span>${x}</span>`).join('');
+    gsap.set(card, { display: 'block' }); gsap.to(card, { opacity: 1, y: 0, duration: .6, delay: .7, ease: 'power3.out' });
+  }
+  function typeLine(text) {
+    const o = { n: 0 }; gsap.to(o, { n: text.length, duration: Math.min(2.4, text.length * .025), ease: 'none', delay: .3,
+      onUpdate: () => { line.textContent = text.slice(0, Math.round(o.n)); } });
+  }
+
+  // ---- phone call: the view of holding the phone, live caption, warning mid-call ----
+  const CALL = [
+    "Hello, this is Anna from your bank's security team.",
+    "We've stopped a suspicious payment from your account.",
+    "To cancel it, read me the code we just sent you.",
+    "Then we'll move your money to a safe account. Don't tell anyone.",
+  ];
+  function runCall(start) {
+    const cap = callView.querySelector('.sim-captions'), timer = callView.querySelector('.sim-timer');
+    cap.innerHTML = ''; setApp(start ? 'listening' : 'ready', start ? 'Listening to this call through the glasses mic.' : 'Tap the call button (or check) to let Second Look listen.');
+    chip.textContent = start ? 'listening' : 'ready'; chip.className = 'sim-status ' + (start ? 'live' : '');
+    gsap.fromTo('.sim-call .sim-hand', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: .8, ease: 'power3.out' });
+    if (!start) { checkBtn.classList.add('pulse'); line.textContent = 'On request: tap check to listen to this call.'; return; }
+    let sec = 0; const tick = () => { sec++; timer.textContent = `0:${String(sec).padStart(2, '0')}`; later(1000, tick); }; later(1000, tick);
+    CALL.forEach((t, i) => later(900 + i * 2300, () => {
+      const p = document.createElement('p'); p.textContent = '“' + t + '”'; cap.appendChild(p);
+      gsap.from(p, { opacity: 0, y: 8, duration: .4 });
+      if (i === 2) {
+        const why = 'A caller claiming to be your bank asks for a code and a “safe account” transfer. Hang up and call the number on your card.';
+        callView.classList.add('alarm');
+        showHud('LIKELY SCAM', 'Hang up. Don\'t share the code.', 'Asks for codes · “Safe account”', 'scam');
+        chip.textContent = 'likely scam'; chip.className = 'sim-status scam';
+        typeLine(why); setApp('likely scam', why, 'scam');
+        showCard('LIKELY SCAM', 'Hang up. Don\'t share the code.', why, ['Asks for codes or passwords', '“Safe account”'], 'scam');
+      }
+    }));
+  }
+
+  addEventListener('resize', () => { if (current && !SCENES[current].call && img.naturalWidth) { fit(); } });
+  fetch('media/sim/detections.json').then(r => r.json()).then(d => { DET = d; }).finally(() => {
+    // start when the section comes into view
+    let started = false;
+    const start = () => { if (started) return; started = true; select('messages', false); };
+    const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); start(); } }, { threshold: .15 });
+    io.observe(root);
+    const onScroll = () => { const r = root.getBoundingClientRect(); if (r.top < innerHeight * .6 && r.bottom > 0) { removeEventListener('scroll', onScroll); start(); } };
+    addEventListener('scroll', onScroll, { passive: true }); onScroll();
+  });
+})();
