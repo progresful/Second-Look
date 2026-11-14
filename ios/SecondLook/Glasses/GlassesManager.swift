@@ -326,6 +326,7 @@ final class GlassesManager {
     func get() -> UIImage? { lock.lock(); defer { lock.unlock() }; return image }
   }
   nonisolated let frameBox = FrameBox()
+  nonisolated let hevc = HEVCDecoder()
   final class FrameCounter: @unchecked Sendable {
     private let lock = NSLock(); private var n = 0
     func next() -> Int { lock.lock(); defer { lock.unlock() }; n += 1; return n }
@@ -337,19 +338,22 @@ final class GlassesManager {
       guard try await wearables.requestPermission(.camera) == .granted else { throw GlassesError.permissionDenied }
     }
     try startStream(on: session)
-    let box = frameBox
+    let decoder = hevc
+    decoder.reset()
     let counter = FrameCounter()
     camera?.stream.videoFramePublisher.listen { [weak self] frame in
       let n = counter.next()
-      guard let image = frame.makeUIImage() else {
-        if n <= 3 || n % 150 == 0 { NSLog("[SecondLook] glasses frame %d: could not convert to image", n) }
-        return
+      decoder.decode(frame.sampleBuffer)
+      if n <= 2 || n % 300 == 0 {
+        let size = decoder.image()?.size ?? .zero
+        NSLog("[SecondLook] glasses frame %d: %.0fx%.0f (HEVC)", n, size.width, size.height)
       }
-      if n <= 2 || n % 300 == 0 { NSLog("[SecondLook] glasses frame %d: %.0fx%.0f", n, image.size.width, image.size.height) }
-      box.set(image)
-      Task { @MainActor in
-        guard let self, self.liveVideoOn, Date().timeIntervalSince(self.lastPreviewAt) > 0.12 else { return }
-        self.lastPreviewAt = Date(); self.previewFrame = image
+      // The on-screen preview only needs a few pictures a second.
+      if n % 2 == 0, let image = decoder.image() {
+        Task { @MainActor in
+          guard let self, self.liveVideoOn else { return }
+          self.previewFrame = image
+        }
       }
     }.store(in: streamTokens)
     try await waitForStreaming(timeout: .seconds(6))
@@ -360,13 +364,13 @@ final class GlassesManager {
   func stopLiveVideo() {
     guard liveVideoOn || camera != nil else { return }
     liveVideoOn = false
-    frameBox.set(nil)
+    hevc.reset()
     previewFrame = nil
     stopStream()
   }
 
   /// The newest glasses frame, or nil before the first one arrives.
-  nonisolated func videoSnapshot() -> UIImage? { frameBox.get() }
+  nonisolated func videoSnapshot() -> UIImage? { hevc.image() }
 
   func capturePhoto(timeout: Duration = .seconds(8)) async throws -> UIImage {
     guard let session, sessionState == .started else { throw GlassesError.notConnected }
@@ -421,14 +425,31 @@ final class GlassesManager {
   }
 
   private func startStream(on session: DeviceSession) throws {
-    guard camera == nil else { return }
+    // A session can hold one camera and has no way to remove it, so keep the camera and
+    // just restart its stream (re-adding fails with "capability already active").
+    if let cam = camera {
+      guard streamState != .streaming && streamState != .starting else { return }
+      streamTokens.clear()
+      attachStreamListeners(cam)
+      streamState = .starting
+      cam.stream.start()
+      return
+    }
     // High resolution: we need to read small text on letters and screens.
     // Raw (uncompressed) frames: VideoFrame.makeUIImage() can't convert hvc1 (HEVC) frames,
     // and live scan needs images. Medium resolution keeps raw frames within the link budget.
     // 7 fps is plenty (live scan reads twice a second) and keeps the glasses cooler.
-    let config = StreamConfiguration(videoCodec: .raw, resolution: .high, frameRate: 7)
+    // Compressed HEVC (decoded on the phone) at 720p, 7 fps: sharp enough to read text,
+    // light enough for the glasses' wireless link and battery.
+    let config = StreamConfiguration(videoCodec: .hvc1, resolution: .high, frameRate: 7)
     guard let cam = try session.addCamera(config: config) else { throw GlassesError.cameraUnavailable }
     camera = cam
+    attachStreamListeners(cam)
+    streamState = .starting
+    cam.stream.start()
+  }
+
+  private func attachStreamListeners(_ cam: Camera) {
     cam.stream.statePublisher.listen { [weak self] state in
       Task { @MainActor in self?.streamState = state }
     }.store(in: streamTokens)
@@ -452,8 +473,6 @@ final class GlassesManager {
         if let c = self.photoContinuation { self.photoContinuation = nil; c.resume(throwing: error) }
       }
     }.store(in: streamTokens)
-    streamState = .starting
-    cam.stream.start()
   }
 
   private func waitForStreaming(timeout: Duration) async throws {
@@ -470,7 +489,6 @@ final class GlassesManager {
   private func stopStream() {
     camera?.stream.stop()
     streamTokens.clear()
-    camera = nil
     streamState = .stopped
   }
 
