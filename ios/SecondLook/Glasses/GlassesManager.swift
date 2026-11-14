@@ -67,6 +67,18 @@ final class GlassesManager {
   /// Meta's toolkit says the glasses-side app must be updated in Meta AI first.
   var needsGlassesAppUpdate: Bool { (lastError ?? "").localizedCaseInsensitiveContains("update") }
 
+  /// Opens Meta AI on the screen that updates Second Look's companion app on the glasses.
+  func openGlassesAppUpdate() {
+    guard let wearables else { return }
+    Task { do { try await wearables.openDATGlassesAppUpdate() } catch { lastError = "Couldn't open Meta AI: \(error)" } }
+  }
+
+  /// Opens Meta AI's firmware update screen for the glasses.
+  func openFirmwareUpdate() {
+    guard let wearables else { return }
+    Task { do { try await wearables.openFirmwareUpdate() } catch { lastError = "Couldn't open Meta AI: \(error)" } }
+  }
+
   func refreshAudioRoute() {
     let r = AVAudioSession.sharedInstance().currentRoute
     let bt: [AVAudioSession.Port] = [.bluetoothA2DP, .bluetoothHFP, .bluetoothLE]

@@ -126,6 +126,7 @@ struct ContentView: View {
         .fill(glasses.isConnected ? Color.green : glasses.bluetoothAudioName != nil ? Color.orange : Color.white.opacity(0.5))
         .frame(width: 8, height: 8)
       Text(glasses.headerText).lineLimit(1)
+        .onTapGesture { if glasses.needsGlassesAppUpdate { glasses.openGlassesAppUpdate() } else { glasses.refreshConnection() } }
         .font(.system(size: 15, weight: .medium))
         .opacity(0.85)
       Spacer()

@@ -21,8 +21,12 @@ struct SettingsView: View {
         Section("Glasses") {
           LabeledContent("Status", value: glasses.statusText)
           if glasses.isRegistered {
+            if glasses.needsGlassesAppUpdate {
+              Button("Update glasses app in Meta AI") { glasses.openGlassesAppUpdate() }
+            }
             if !glasses.isConnected {
               Button("Connect glasses") { glasses.refreshConnection() }
+              Button("Check glasses firmware") { glasses.openFirmwareUpdate() }
             }
             Button("Disconnect glasses from Second Look", role: .destructive) { glasses.unregister() }
           } else {
