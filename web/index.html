@@ -59,6 +59,9 @@ nav ul a{text-decoration:none;transition:color .2s} nav ul a:hover{color:#fff}
 .sheen{position:absolute;inset:-20%;pointer-events:none;mix-blend-mode:screen;opacity:.16;
   background:linear-gradient(115deg,rgba(255,255,255,0) 35%,rgba(180,200,255,.5) 48%,rgba(255,255,255,0) 60%);transform:translateX(-30%)}
 .tint{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(40,60,120,.10),rgba(0,0,0,0) 40%,rgba(0,0,0,.25))}
+.dive{position:absolute;inset:0;width:100%;height:100%;z-index:5;background:#000;pointer-events:none}
+.hud,.topfade,.transcript,.herotitle,.botfade,.herobottom,.scrollcue{z-index:6}
+.hero.diving .ov{opacity:0;visibility:hidden}
 .boxes .bx{position:absolute;border:2.5px solid var(--red);border-radius:10px;background:rgba(255,69,58,.12);opacity:0;transform:scale(1.12);
   box-shadow:0 0 0 1px rgba(255,69,58,.25),0 0 30px rgba(255,69,58,.35)}
 .boxes .bx b{position:absolute;left:-2px;top:calc(100% + 8px);white-space:nowrap;background:var(--red);color:#fff;font-size:13px;font-weight:600;padding:5px 10px;border-radius:8px;letter-spacing:-.005em}
@@ -98,6 +101,8 @@ nav ul a{text-decoration:none;transition:color .2s} nav ul a:hover{color:#fff}
 .sign.amber i{background:var(--amber)}
 .sign.verdict{background:var(--red);border-color:var(--red);color:#fff;font-weight:700;letter-spacing:.04em;font-size:14px}
 .sign.verdict.amber{background:var(--amber);border-color:var(--amber);color:#111}
+.divehint{position:absolute;left:50%;bottom:64px;transform:translateX(-50%);z-index:6;font-size:13px;letter-spacing:.02em;color:rgba(255,255,255,.6);transition:opacity .4s}
+.hero:not(.diving) .divehint{opacity:0}
 .scrollcue{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);width:22px;height:34px;border-radius:12px;border:1.5px solid rgba(255,255,255,.35)}
 .scrollcue::after{content:"";position:absolute;left:50%;top:7px;width:3px;height:7px;border-radius:2px;background:#fff;transform:translateX(-50%);animation:cue 1.6s infinite}
 @keyframes cue{0%{opacity:0;transform:translate(-50%,0)}40%{opacity:1}100%{opacity:0;transform:translate(-50%,10px)}}
@@ -219,7 +224,7 @@ footer .cols{display:grid;grid-template-columns:1fr 1fr;gap:40px}
   <a class="navcta" href="#how">See how</a>
 </nav>
 
-<header class="hero" id="top">
+<header class="hero diving" id="top">
   <div class="pov" id="pov">
     <video id="vid" src="media/hero.mp4" poster="media/hero-poster.jpg" muted playsinline loop preload="auto" aria-label="First-person demo: a fake Ray-Ban webshop and a job-scam email"></video>
     <div class="scanline" id="scan"></div>
@@ -229,26 +234,28 @@ footer .cols{display:grid;grid-template-columns:1fr 1fr;gap:40px}
   <div class="lensblur"></div>
   <div class="lens"></div>
   <div class="sheen" id="sheen"></div>
+  <canvas class="dive" id="dive" aria-hidden="true"></canvas>
 
-  <div class="hud" id="hud" aria-hidden="true">
+  <div class="hud ov" id="hud" aria-hidden="true">
     <div class="h"><svg viewBox="0 0 24 24" fill="#FF453A"><path d="M12 2 1 21h22L12 2zm1 15h-2v-2h2v2zm0-4h-2V9h2v4z"/></svg><span id="hudWord">LIKELY SCAM</span></div>
     <div class="a" id="hudAct">Don't pay or reply.</div>
     <div class="w" id="hudWhy">Lookalike domain · Price far below normal</div>
     <small><i></i>Glasses display</small>
   </div>
 
-  <div class="topfade"></div>
-  <h1 class="herotitle">A second opinion before you pay.</h1>
-  <div class="transcript" aria-live="polite">
+  <div class="topfade ov"></div>
+  <h1 class="herotitle ov">A second opinion before you pay.</h1>
+  <div class="transcript ov" aria-live="polite">
     <span class="live"><i></i>Live · what Second Look sees</span>
     <p><span id="lineText"></span><span class="caret"></span></p>
   </div>
 
-  <div class="botfade"></div>
-  <div class="herobottom">
+  <div class="botfade ov"></div>
+  <div class="herobottom ov">
     <div class="signs" id="signs" aria-live="polite"></div>
   </div>
   <div class="scrollcue" aria-hidden="true"></div>
+  <div class="divehint" aria-hidden="true">Scroll to put them on</div>
 </header>
 
 <section class="statement wrap">
@@ -434,16 +441,43 @@ vid.addEventListener('timeupdate',()=>{ const t=vid.currentTime; let i=-1; CUES.
   if(i===cueIdx) return; if(i<cueIdx) clearMarks(); cueIdx=i; if(i<0) return;
   const c=CUES[i]; type(c.text); if(c.clear) clearMarks(); if(c.scan) scan(); if(c.boxes) showMarks(c); });
 
-const intro=gsap.timeline({defaults:{ease:'power3.out'}});
-intro.fromTo('#pov',{scale:1.12,filter:'blur(14px) brightness(.4)'},{scale:1,filter:'blur(0px) brightness(1)',duration:1.8,ease:'power2.out'})
-     .from('.transcript',{y:-16,opacity:0,duration:.9},'-=1.1')
-     .from('.herotitle',{y:24,opacity:0,duration:1.1},'-=1.3')
-     .add(()=>{vid.play().catch(()=>{});},'-=1.4');
+/* ---------- "put them on": rendered 3D glasses, scrubbed by scroll, handing over to the real footage ---------- */
+const N=120, INTRO=40, dpr=Math.min(devicePixelRatio||1,2);
+const base=(innerWidth<800?'media/dive-s/':'media/dive/');
+const frames=[]; for(let i=1;i<=N;i++){ const im=new Image(); im.decoding='async'; im.src=base+'f_'+String(i).padStart(4,'0')+'.webp'; frames[i]=im; }
+const cv=document.getElementById('dive'), ctx=cv.getContext('2d'), heroEl=document.querySelector('.hero'), pov=document.getElementById('pov');
+const state={f:1}; let handed=false;
+function ready(im){ return im && im.complete && im.naturalWidth>0; }
+function draw(){
+  const W=heroEl.clientWidth, Hh=heroEl.clientHeight;
+  if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(Hh*dpr)){ cv.width=Math.round(W*dpr); cv.height=Math.round(Hh*dpr); }
+  let i=Math.max(1,Math.min(N,Math.round(state.f))), im=frames[i];
+  if(!ready(im)) for(let k=i;k>=1;k--) if(ready(frames[k])){ im=frames[k]; break; }
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,cv.width,cv.height);
+  if(!ready(im)) return;
+  // centred "cover" early on, easing into the hero footage's exact rectangle at the end
+  const cw=Math.min(W,Hh*16/9)*.92, ch=cw*9/16, a={x:(W-cw)/2,y:(Hh-ch)/2+20,w:cw,h:ch};
+  const hr=heroEl.getBoundingClientRect(), pr=pov.getBoundingClientRect(), b={x:pr.left-hr.left,y:pr.top-hr.top,w:pr.width,h:pr.height};
+  const t=Math.min(1,Math.max(0,(state.f-44)/(92-44))), e=t*t*(3-2*t);
+  const r={x:a.x+(b.x-a.x)*e,y:a.y+(b.y-a.y)*e,w:a.w+(b.w-a.w)*e,h:a.h+(b.h-a.h)*e};
+  ctx.drawImage(im,r.x*dpr,r.y*dpr,r.w*dpr,r.h*dpr);
+}
+function handoff(on){
+  if(on===handed) return; handed=on;
+  if(on){ heroEl.classList.remove('diving'); cueIdx=-1; boxesEl.innerHTML=''; signsEl.innerHTML='';
+    vid.currentTime=0; vid.play().catch(()=>{});
+    gsap.to(cv,{opacity:0,duration:.5,ease:'power1.out'});
+    gsap.fromTo('.hero .ov:not(.hud)',{opacity:0},{opacity:1,duration:.8,stagger:.06,ease:'power2.out'}); }
+  else { vid.pause(); gsap.to(cv,{opacity:1,duration:.25}); heroEl.classList.add('diving'); gsap.set(hud,{opacity:0}); }
+}
+frames[1].onload=draw; addEventListener('resize',draw);
+// on load: the glasses appear and settle (frames 1-40), then scrolling dives in (40-120)
+gsap.to(state,{f:INTRO,duration:reduce?0:2.2,ease:'power2.out',onUpdate:draw,delay:.2});
+ScrollTrigger.create({trigger:'.hero',start:'top top',end:'+=160%',pin:true,scrub:.6,
+  onUpdate(self){ if(self.progress>0){ state.f=INTRO+(N-INTRO)*self.progress; draw(); } handoff(self.progress>.985); }});
+ScrollTrigger.create({trigger:'.hero',start:'top top',end:'bottom top',endTrigger:'.statement',onLeave:()=>vid.pause(),onEnterBack:()=>{ if(handed) vid.play().catch(()=>{}); }});
 gsap.to('#sheen',{x:'60%',duration:9,repeat:-1,yoyo:true,ease:'sine.inOut'});
-if(reduce) intro.progress(1);
-gsap.fromTo('#pov',{scale:1},{scale:1.08,ease:'none',immediateRender:false,scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom top',scrub:true}});
-gsap.fromTo('.hero',{opacity:1},{opacity:.25,ease:'none',immediateRender:false,scrollTrigger:{trigger:'.hero',start:'40% top',end:'bottom top',scrub:true}});
-ScrollTrigger.create({trigger:'.hero',start:'top top',end:'bottom top',onLeave:()=>vid.pause(),onEnterBack:()=>vid.play().catch(()=>{})});
+if(reduce){ state.f=N; draw(); handoff(true); }
 
 gsap.from('.statement > *',{y:50,opacity:0,duration:1.1,ease:'power3.out',stagger:.15,scrollTrigger:{trigger:'.statement',start:'top 75%'}});
 gsap.utils.toArray('.step').forEach(s=>gsap.from(s.children,{y:40,opacity:0,duration:1,ease:'power3.out',stagger:.08,scrollTrigger:{trigger:s,start:'top 70%'}}));
