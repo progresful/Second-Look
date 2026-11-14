@@ -376,7 +376,11 @@ final class CheckCoordinator {
           "always on": self.alwaysOn ? "on" : "off",
           "last verdict": self.result.map { "\($0.verdict.rawValue): \($0.why)" } ?? "none",
         ]
-        let code = await self.api.postDebug(image: frame, status: status, log: DebugLog.shared.recent())
+        // Keep the mirror light so it never competes with a real check: a small frame every
+        // 3 s, status and the last 60 log lines every second, nothing while a check uploads.
+        if self.liveCheckInFlight { try? await Task.sleep(for: .milliseconds(500)); continue }
+        let withFrame = sent % 3 == 0
+        let code = await self.api.postDebug(image: withFrame ? frame : nil, status: status, log: DebugLog.shared.recent(60))
         sent += 1
         if sent <= 3 || code != 200 { NSLog("[SecondLook] debug mirror post %d: HTTP %d, frame %@", sent, code, frame == nil ? "none" : "yes") }
         try? await Task.sleep(for: .milliseconds(900))

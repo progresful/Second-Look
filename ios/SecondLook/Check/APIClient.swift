@@ -36,7 +36,7 @@ struct APIClient {
   /// live = a live-scan frame: the server uses its fast model (~3 s) instead of the stronger one (~9 s).
   /// phoneText (live only, already redacted): what the phone read, so Gemini needn't transcribe.
   func analyzeImage(_ image: UIImage, live: Bool = false, phoneText: String = "") async throws -> CheckResult {
-    let timeout: TimeInterval = live ? 8 : 15
+    let timeout: TimeInterval = live ? 12 : 15
     guard let jpeg = image.downscaled(maxSide: 1280).jpegData(compressionQuality: 0.7) else {
       throw APIError.encoding
     }
@@ -51,7 +51,7 @@ struct APIClient {
   @discardableResult
   func postDebug(image: UIImage?, status: [String: String], log: [String] = []) async -> Int {
     var body: [String: Any] = ["status": status, "log": log]
-    if let jpeg = image?.downscaled(maxSide: 720).jpegData(compressionQuality: 0.6) { body["image_base64"] = jpeg.base64EncodedString() }
+    if let jpeg = image?.downscaled(maxSide: 480).jpegData(compressionQuality: 0.5) { body["image_base64"] = jpeg.base64EncodedString() }
     var req = URLRequest(url: baseURL.appendingPathComponent("debug/frame"), timeoutInterval: 4)
     req.httpMethod = "POST"
     req.setValue("application/json", forHTTPHeaderField: "Content-Type")
