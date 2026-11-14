@@ -8,6 +8,11 @@ struct SecondLookApp: App {
   @State private var coordinator: CheckCoordinator
 
   init() {
+    // A server override left over from a temporary demo tunnel goes stale when the tunnel
+    // stops; drop it so the app uses its built-in server (secondlook.pgf.lv).
+    if let o = UserDefaults.standard.string(forKey: "apiBaseURL"), o.contains("trycloudflare.com") {
+      UserDefaults.standard.removeObject(forKey: "apiBaseURL")
+    }
     var configured = false
     do {
       try Wearables.configure()

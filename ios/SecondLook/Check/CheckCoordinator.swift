@@ -315,7 +315,9 @@ final class CheckCoordinator {
   @ObservationIgnored private var mirrorTask: Task<Void, Never>?
   func setDebugMirror(_ on: Bool) {
     mirrorTask?.cancel(); mirrorTask = nil
+    NSLog("[SecondLook] debug mirror %@ → %@", on ? "on" : "off", api.baseURL.absoluteString)
     guard on else { return }
+    var sent = 0
     mirrorTask = Task { [weak self] in
       while !Task.isCancelled {
         guard let self else { return }
@@ -335,7 +337,9 @@ final class CheckCoordinator {
           "always on": self.alwaysOn ? "on" : "off",
           "last verdict": self.result.map { "\($0.verdict.rawValue): \($0.why)" } ?? "none",
         ]
-        await self.api.postDebug(image: frame, status: status)
+        let code = await self.api.postDebug(image: frame, status: status)
+        sent += 1
+        if sent <= 3 || code != 200 { NSLog("[SecondLook] debug mirror post %d: HTTP %d, frame %@", sent, code, frame == nil ? "none" : "yes") }
         try? await Task.sleep(for: .milliseconds(900))
       }
     }

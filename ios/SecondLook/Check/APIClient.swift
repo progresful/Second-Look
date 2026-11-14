@@ -48,7 +48,8 @@ struct APIClient {
   }
 
   /// Debug mirror (test builds): latest frame + status for the team's viewer.
-  func postDebug(image: UIImage?, status: [String: String]) async {
+  @discardableResult
+  func postDebug(image: UIImage?, status: [String: String]) async -> Int {
     var body: [String: Any] = ["status": status]
     if let jpeg = image?.downscaled(maxSide: 720).jpegData(compressionQuality: 0.6) { body["image_base64"] = jpeg.base64EncodedString() }
     var req = URLRequest(url: baseURL.appendingPathComponent("debug/frame"), timeoutInterval: 4)
@@ -58,7 +59,13 @@ struct APIClient {
       req.setValue(token, forHTTPHeaderField: "X-App-Token")
     }
     req.httpBody = try? JSONSerialization.data(withJSONObject: body)
-    _ = try? await URLSession.shared.data(for: req)
+    do {
+      let (_, resp) = try await URLSession.shared.data(for: req)
+      return (resp as? HTTPURLResponse)?.statusCode ?? 0
+    } catch {
+      NSLog("[SecondLook] debug mirror post failed: %@", error.localizedDescription)
+      return -1
+    }
   }
 
   /// Text check, used for call transcripts and the offline-OCR fallback when online.
