@@ -24,19 +24,24 @@ struct APIClient {
   /// proxy error page), as opposed to the server rejecting this one request.
   static func isUnreachable(_ error: Error) -> Bool {
     if error is URLError { return true }
-    if case APIError.badStatus(let code, _) = error { return code == 0 || code >= 500 }
+    // Our own server answers 502 "fall back" when only Gemini failed: the server is fine.
+    if case APIError.badStatus(let code, let body) = error {
+      return code == 0 || (code >= 500 && !body.contains("fall back"))
+    }
     return false
   }
 
   /// Photo check. The photo is downscaled, sent to our server, which forwards it to Gemini.
   /// Nothing is stored on the phone or by our server.
   /// live = a live-scan frame: the server uses its fast model (~3 s) instead of the stronger one (~9 s).
-  func analyzeImage(_ image: UIImage, live: Bool = false) async throws -> CheckResult {
+  /// phoneText (live only, already redacted): what the phone read, so Gemini needn't transcribe.
+  func analyzeImage(_ image: UIImage, live: Bool = false, phoneText: String = "") async throws -> CheckResult {
     let timeout: TimeInterval = live ? 8 : 15
     guard let jpeg = image.downscaled(maxSide: 1280).jpegData(compressionQuality: 0.7) else {
       throw APIError.encoding
     }
-    let body: [String: Any] = ["image_base64": jpeg.base64EncodedString(), "mime_type": "image/jpeg", "live": live]
+    let body: [String: Any] = ["image_base64": jpeg.base64EncodedString(), "mime_type": "image/jpeg", "live": live,
+                               "text": String(phoneText.prefix(8000))]
     var result = try await post("analyze-image", body: body, timeout: timeout)
     result.engine = "Gemini + server checks"
     return result

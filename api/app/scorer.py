@@ -79,14 +79,14 @@ def _result(verdict, confidence, signals, reason, started, clean, llm_used, mode
     }
 
 
-def analyze_image(image_b64: str, mime: str = "image/jpeg", live: bool = False) -> Optional[dict]:
+def analyze_image(image_b64: str, mime: str = "image/jpeg", live: bool = False, phone_text: str = "") -> Optional[dict]:
     """Photo mode: Gemini reads the image (text, url, boxes), then the deterministic checks
     run on what it read. Gemini findings carry boxes so the client can highlight them."""
     started = time.time()
-    g = llm.analyze_image(image_b64, mime, live=live)
+    g = llm.analyze_image(image_b64, mime, live=live, text=phone_text)
     if g is None:
         return None
-    text = g.get("extracted_text", "") or ""
+    text = g.get("extracted_text", "") or phone_text  # live: the phone's own (redacted) reading
     url = g.get("url") or None
     res = analyze(text, url, use_llm=False)  # rules + prices + domain on Gemini's reading
 

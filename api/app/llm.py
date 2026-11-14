@@ -13,6 +13,9 @@ import re
 from typing import Optional
 
 import httpx
+import logging
+
+log = logging.getLogger("uvicorn.error")
 
 ALLOWED = ["credential_request", "unusual_payment", "false_urgency", "threat", "authority_claim",
            "relative_impersonation", "too_good", "small_fee", "click_link", "remote_access", "secrecy",
@@ -24,6 +27,12 @@ Use only these technique ids: {ids}.
 Quote short evidence exactly as it appears. If it looks like a normal legitimate notice or shop,
 return no techniques and a low scam_likelihood. Do not guess: if unreadable, say so in reason.
 reason: one plain sentence a 75-year-old understands."""
+
+# Live frames: the phone already read the text on-device, so Gemini only judges and
+# locates. Not transcribing cuts the answer from ~400 to ~100 tokens (6 s -> ~2-3 s).
+LIVE_EXTRA = """This is a live camera frame. The phone already read its text (below), so leave
+extracted_text empty. Put the page address, if visible, into url. For each technique, give box_2d
+as [ymin, xmin, ymax, xmax] on a 0-1000 scale around the evidence in the image. Keep reason short."""
 
 IMAGE_EXTRA = """This is a photo taken through smart glasses. First read all visible text (including the
 browser address bar) into extracted_text and the page address into url. For each technique, give box_2d
@@ -80,7 +89,7 @@ FAST_MODEL = os.getenv("GEMINI_MODEL_FAST", "gemini-3.5-flash-lite")
 RICH_MODEL = os.getenv("GEMINI_MODEL_RICH", "gemini-3.1-flash-lite")
 FAST_IMAGE_MODEL = os.getenv("GEMINI_MODEL_FAST_IMAGE", "gemini-3.1-flash-lite")
 DEEP_MODEL = os.getenv("GEMINI_MODEL_DEEP", "gemini-3.5-flash")
-TIMEOUTS = {FAST_MODEL: 4.0, RICH_MODEL: 5.0, FAST_IMAGE_MODEL: 6.0, DEEP_MODEL: 12.0}
+TIMEOUTS = {FAST_MODEL: 4.0, RICH_MODEL: 5.0, FAST_IMAGE_MODEL: 10.0, DEEP_MODEL: 12.0}
 _RICH = re.compile(r"(https?://|www\.|\b[a-z0-9-]+\.[a-z]{2,6}\b|€|\$|£|\d+[.,]\d{2}\b|\biban\b|\bfi\d{2}\b)", re.I)
 _ERRORS = (httpx.HTTPError, ValueError, KeyError, IndexError, TypeError)
 
@@ -97,10 +106,13 @@ def _borderline(out: Optional[dict]) -> bool:
     return bool(out) and 0.3 <= out["scam_likelihood"] <= 0.7
 
 
-def _gemini(text: str, image_b64: Optional[str] = None, mime: str = "image/jpeg", model: Optional[str] = None) -> Optional[dict]:
+def _gemini(text: str, image_b64: Optional[str] = None, mime: str = "image/jpeg", model: Optional[str] = None,
+            live: bool = False) -> Optional[dict]:
     model = model or pick_model(text, image=bool(image_b64))
     prompt = INSTRUCTIONS.format(ids=", ".join(ALLOWED))
-    parts = [{"text": prompt + ("\n" + IMAGE_EXTRA if image_b64 else "") + (f'\nMessage:\n"""{text[:4000]}"""' if text else "")}]
+    extra = (LIVE_EXTRA if live and text else IMAGE_EXTRA) if image_b64 else ""
+    label = "Text the phone read" if image_b64 else "Message"
+    parts = [{"text": prompt + ("\n" + extra if extra else "") + (f'\n{label}:\n"""{text[:4000]}"""' if text else "")}]
     if image_b64:
         parts.append({"inline_data": {"mime_type": mime, "data": image_b64}})
     r = httpx.post(
@@ -153,12 +165,14 @@ def analyze(text: str) -> Optional[dict]:
     return None
 
 
-def analyze_image(image_b64: str, mime: str = "image/jpeg", live: bool = False) -> Optional[dict]:
+def analyze_image(image_b64: str, mime: str = "image/jpeg", live: bool = False, text: str = "") -> Optional[dict]:
     """Image mode (Gemini only): extracted text, url, techniques with boxes.
     live=True: a frame from live scan -> fast model only."""
     if provider() != "gemini":
         return None
     try:
-        return _gemini("", image_b64, mime, model=pick_model("", image=True, live=live))
-    except (httpx.HTTPError, ValueError, KeyError, IndexError, TypeError):
+        return _gemini(text if live else "", image_b64, mime, model=pick_model("", image=True, live=live), live=live)
+    except _ERRORS as e:
+        detail = getattr(getattr(e, "response", None), "text", "")[:200]
+        log.warning("Gemini image check failed (%s): %s %s", type(e).__name__, e, detail)
         return None

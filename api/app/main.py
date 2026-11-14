@@ -59,6 +59,7 @@ class ImageIn(BaseModel):
     image_base64: str = Field(..., max_length=8_000_000, description="JPEG/PNG, base64. Downscale to ~1280 px first.")
     mime_type: str = Field("image/jpeg", pattern=r"^image/(jpeg|png|webp|heic)$")
     live: bool = Field(False, description="Frame from live scan: use the fast model.")
+    text: str = Field("", max_length=8000, description="Live scan: text the phone already read (redacted).")
 
 
 @app.post("/analyze-image")
@@ -66,7 +67,7 @@ def analyze_image(body: ImageIn):
     """Photo mode via Gemini. The image is forwarded to Gemini and not stored by this server."""
     if llm.provider() != "gemini":
         raise HTTPException(503, "Image mode needs GEMINI_API_KEY on the server.")
-    result = scorer.analyze_image(body.image_base64, body.mime_type, live=body.live)
+    result = scorer.analyze_image(body.image_base64, body.mime_type, live=body.live, phone_text=body.text)
     if result is None:
         raise HTTPException(502, "Image check failed. Client should fall back to on-device text check.")
     STATS["checks"] += 1

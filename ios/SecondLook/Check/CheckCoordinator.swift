@@ -111,11 +111,11 @@ final class CheckCoordinator {
   }
 
   /// Gemini via our server first; if that fails, on-device OCR + server text check, then offline rules.
-  private func check(image: UIImage, live: Bool = false) async -> CheckResult {
+  private func check(image: UIImage, live: Bool = false, phoneText: String = "") async -> CheckResult {
     // Live scan: if the server was just unreachable, don't wait on it again for 30 s.
     let skipServer = live && Date() < serverDownUntil
     if !skipServer {
-      do { return try await api.analyzeImage(image, live: live) } catch {
+      do { return try await api.analyzeImage(image, live: live, phoneText: phoneText) } catch {
         if live, APIClient.isUnreachable(error) { serverDownUntil = Date().addingTimeInterval(30) }
         NSLog("[SecondLook] image check failed: \(error)")
       }
@@ -209,7 +209,7 @@ final class CheckCoordinator {
     liveStatus = .checking
     let checkedLines = lines
     Task {
-      let r = await check(image: frame, live: true)
+      let r = await check(image: frame, live: true, phoneText: Redactor.redact(text))
       liveCheckInFlight = false
       guard liveStatus != .off else { return }
       liveStatus = .watching
