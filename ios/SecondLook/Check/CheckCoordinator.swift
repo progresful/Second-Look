@@ -351,15 +351,49 @@ final class CheckCoordinator {
     if usingPhoneMic { phoneListener.stop() } else { glasses.stopListening() }
     isListening = false
     transcript = ""
+    callCaption = ""
   }
+
+  private static func lastWords(_ text: String, maxChars: Int) -> String {
+    guard text.count > maxChars else { return text }
+    let tail = text.suffix(maxChars)
+    return "…" + (tail.firstIndex(of: " ").map { String(tail[tail.index(after: $0)...]) } ?? String(tail))
+  }
+
+  #if DEBUG
+  /// Recording aid (`--demo-call`): plays a scripted call, word by word, through the real
+  /// call check. No microphone, so the simulator can show call mode.
+  func demoCall(_ lines: [String]) async {
+    transcript = ""
+    usingPhoneMic = true
+    isListening = true
+    speaker.say("Listening to this call. I'll warn you if it sounds like a scam.")
+    try? await Task.sleep(for: .seconds(4))
+    var text = ""
+    for line in lines {
+      for word in line.split(separator: " ") {
+        guard isListening else { return }
+        text += (text.isEmpty ? "" : " ") + word
+        heard(text, isFinal: false)
+        try? await Task.sleep(for: .milliseconds(230))
+      }
+      heard(text, isFinal: true)
+      try? await Task.sleep(for: .milliseconds(900))
+    }
+  }
+  #endif
 
   private static let urgentWords = ["code", "safe account", "anydesk", "teamviewer", "gift card", "bitcoin",
                                     "password", "pin", "transfer", "don't tell", "tunnusluku", "turvatili"]
+
+  /// The last words heard on the call, shown on screen while listening (never stored).
+  private(set) var callCaption = ""
 
   private func heard(_ text: String, isFinal: Bool) {
     guard isListening else { return }
     if usingPhoneMic { transcript = text } else if isFinal { transcript += (transcript.isEmpty ? "" : " ") + text }
     let current = usingPhoneMic ? transcript : transcript + " " + text
+    callCaption = Self.lastWords(current, maxChars: 120)
     let lower = current.lowercased()
     let urgent = Self.urgentWords.contains { lower.contains($0) }
     let since = Date().timeIntervalSince(lastCallCheck)

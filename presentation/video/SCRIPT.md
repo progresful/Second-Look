@@ -30,3 +30,11 @@ Every claim is in LEDGER.md. Format 16:9, 1080p, captions burned in. Real phone 
 - **Voice:** Kokoro-82M (narrator `af_heart`, app voice `bf_emma`). The app's lines use the app's own sentence template and the server's explanations.
 - **Rebuild:** `build/build.py` (needs the clips in ~/Downloads, Chrome, ffmpeg; voice from `build/kokoro_gen.py`).
 - Making it surfaced a real bug, fixed in the server: Gemini's web-address and price findings were dropped from the verdict, so the webshop came back "looks okay".
+
+## Version 2 (current `second-look-60s.mp4`, 58.4 s)
+Dark, fast cut. Adds the problem size, the app itself, call check and options.
+- **Problem figures (sourced, in LEDGER.md):** 57% of adults worldwide ran into a scam, 23% lost money (GASA, Global State of Scams 2025); $20.9B reported online-crime losses in the US in 2025 (FBI IC3).
+- **App screens:** iOS simulator recordings of the real app: choosing what to guard, on request / always on, the menu, a real check ending in "likely scam", and call check.
+- **Call check:** a scripted bank-impersonation call fed word by word into the app's real call check (`--demo-call`; the simulator has no microphone). Labelled "scripted call audio". Not yet tested on a live call.
+- **Music:** Lyria 3 Pro (Gemini API), ducked under the voice. **Voice:** Kokoro-82M.
+- **Rebuild:** `build/build2.py` with `build/lines_v2.json`.

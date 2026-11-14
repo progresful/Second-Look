@@ -61,6 +61,16 @@ struct ContentView: View {
       try? await Task.sleep(for: .seconds(3))
       await coordinator.checkPhoneImage(image)
     }
+    .task {
+      guard ProcessInfo.processInfo.arguments.contains("--demo-call") else { return }
+      try? await Task.sleep(for: .seconds(2))
+      await coordinator.demoCall([
+        "Hello, this is Anna from your bank's security team.",
+        "We've noticed a suspicious payment from your account.",
+        "To stop it, I need you to read me the code we just sent you.",
+        "Then we'll move your money to a safe account. Don't tell anyone, it's confidential.",
+      ])
+    }
     #endif
     .alert("Something went wrong", isPresented: .constant(coordinator.errorMessage != nil)) {
       Button("OK") { coordinator.errorMessage = nil }
@@ -132,6 +142,15 @@ struct ContentView: View {
         .opacity(0.92)
         .fixedSize(horizontal: false, vertical: true)
         .animation(.easeInOut, value: stateText)
+      if coordinator.isListening, coordinator.result == nil, !coordinator.callCaption.isEmpty {
+        Text("“\(coordinator.callCaption)”")
+          .font(.system(size: 17, weight: .medium, design: .serif))
+          .italic()
+          .opacity(0.8)
+          .lineLimit(3)
+          .padding(.top, 6)
+          .accessibilityLabel("Heard on the call: \(coordinator.callCaption)")
+      }
     }
     .shadow(color: .black.opacity(0.12), radius: 8, y: 2)
     .contentShape(Rectangle())

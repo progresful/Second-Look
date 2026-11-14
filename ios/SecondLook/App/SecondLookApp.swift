@@ -17,7 +17,7 @@ struct SecondLookApp: App {
     #if DEBUG
     if configured { MockGlasses.enableIfRequested() }
     #endif
-    if UserDefaults.standard.bool(forKey: "consentGiven"), !ProcessInfo.processInfo.arguments.contains("--demo-check") { Notifier.shared.setUp() }
+    if UserDefaults.standard.bool(forKey: "consentGiven"), !ProcessInfo.processInfo.arguments.contains(where: { $0.hasPrefix("--demo-") }) { Notifier.shared.setUp() }
     let glasses = GlassesManager(sdkConfigured: configured)
     _glasses = State(wrappedValue: glasses)
     _coordinator = State(wrappedValue: CheckCoordinator(glasses: glasses))
