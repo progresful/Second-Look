@@ -35,7 +35,8 @@ struct LiveScanView: View {
         Spacer()
 
         if let r = coordinator.result {
-          resultCard(r)
+          AlertCard(result: r, compact: true, onRepeat: { coordinator.repeatAnswer() },
+                    onDone: { coordinator.dismissResult() })
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
             .transition(.move(edge: .bottom).combined(with: .opacity))

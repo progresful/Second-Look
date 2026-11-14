@@ -19,14 +19,20 @@ struct ContentView: View {
       VStack(alignment: .leading, spacing: 0) {
         header
         Spacer(minLength: 24)
-        state
-        protectionList
-          .padding(.top, 28)
-        ModeToggle(alwaysOn: Binding(get: { coordinator.alwaysOn }, set: { coordinator.alwaysOn = $0 }))
-          .padding(.top, 22)
+        if let r = coordinator.result {
+          AlertCard(result: r, onRepeat: { coordinator.repeatAnswer() }, onDone: { coordinator.dismissResult() })
+            .transition(.move(edge: .bottom).combined(with: .opacity))
+        } else {
+          state
+          protectionList
+            .padding(.top, 28)
+          ModeToggle(alwaysOn: Binding(get: { coordinator.alwaysOn }, set: { coordinator.alwaysOn = $0 }))
+            .padding(.top, 22)
+        }
         Spacer(minLength: 16)
         bottomBar
       }
+      .animation(.spring(response: 0.45, dampingFraction: 0.85), value: coordinator.result)
       .padding(.horizontal, 28)
       .padding(.top, 8)
       .padding(.bottom, 12)

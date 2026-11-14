@@ -28,6 +28,7 @@ struct SecondLookApp: App {
       ContentView()
         .environment(glasses)
         .environment(coordinator)
+        .task { Speaker.shared.prepareWarmVoice() }
         // Meta AI app calls back here to finish registration and permission flows.
         .onOpenURL { url in
           #if DEBUG

@@ -10,6 +10,9 @@ packages:
   MWDAT:
     url: https://github.com/facebook/meta-wearables-dat-ios
     exactVersion: 1.0.1
+  FluidAudio:
+    url: https://github.com/FluidInference/FluidAudio
+    exactVersion: 0.18.3
 targets:
   SecondLook:
     type: application
@@ -42,3 +45,5 @@ targets:
         product: MWDATSpeech
       - package: MWDAT
         product: MWDATMockDevice
+      - package: FluidAudio
+        product: FluidAudio

@@ -6,6 +6,7 @@ struct SettingsView: View {
   @Environment(\.dismiss) private var dismiss
   @AppStorage("apiBaseURL") private var apiBaseURL = ""
   @AppStorage("speechRate") private var speechRate: Double = 0.52
+  @State private var voiceStatus = "…"
   @AppStorage("consentGiven") private var consentGiven = true
   #if DEBUG
   @State private var mockOn = MockGlasses.isOn
@@ -24,13 +25,31 @@ struct SettingsView: View {
           }
         }
 
-        Section("Voice") {
+        Section {
+          HStack {
+            Text("Warm voice")
+            Spacer()
+            Text(voiceStatus).foregroundStyle(.secondary)
+          }
+          .task {
+            while !Task.isCancelled {
+              voiceStatus = switch await KokoroVoice.shared.state {
+              case .ready: "ready, works offline"
+              case .loading: "downloading…"
+              case .failed: "unavailable, using iPhone voice"
+              case .notLoaded: "not loaded"
+              }
+              try? await Task.sleep(for: .seconds(1))
+            }
+          }
           VStack(alignment: .leading) {
             Text("Speaking speed")
             Slider(value: $speechRate, in: 0.35...0.6)
               .onChange(of: speechRate) { _, v in Speaker.shared.rate = Float(v) }
           }
-          Button("Test voice") { Speaker.shared.say("Likely scam. Real banks never ask for your codes.") }
+          Button("Test voice") { Speaker.shared.say("Hold on. This looks like a scam. Real banks never ask for your codes.") }
+        } header: { Text("Voice") } footer: {
+          Text("Kokoro-82M runs on this iPhone. It downloads once (needs internet the first time), then works offline. Until then the iPhone voice is used.")
         }
 
         Section {

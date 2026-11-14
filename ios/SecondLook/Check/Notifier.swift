@@ -14,8 +14,9 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
 
   func post(_ result: CheckResult) {
     let content = UNMutableNotificationContent()
-    content.title = result.title
-    content.body = result.summary
+    content.title = result.title + " · " + result.action
+    content.body = [result.why, result.verdict == .scam || result.verdict == .suspicious ? result.nextStep : ""]
+      .filter { !$0.isEmpty }.joined(separator: " ")
     content.sound = (result.verdict == .scam || result.verdict == .suspicious) ? .defaultCritical : nil
     content.interruptionLevel = (result.verdict == .scam) ? .timeSensitive : .active
     // Same id replaces the previous result instead of stacking.
