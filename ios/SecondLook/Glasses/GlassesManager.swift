@@ -323,6 +323,10 @@ final class GlassesManager {
     func get() -> UIImage? { lock.lock(); defer { lock.unlock() }; return image }
   }
   nonisolated let frameBox = FrameBox()
+  final class FrameCounter: @unchecked Sendable {
+    private let lock = NSLock(); private var n = 0
+    func next() -> Int { lock.lock(); defer { lock.unlock() }; n += 1; return n }
+  }
 
   func startLiveVideo() async throws {
     guard let session, sessionState == .started else { throw GlassesError.notConnected }
@@ -331,8 +335,14 @@ final class GlassesManager {
     }
     try startStream(on: session)
     let box = frameBox
+    let counter = FrameCounter()
     camera?.stream.videoFramePublisher.listen { [weak self] frame in
-      guard let image = frame.makeUIImage() else { return }
+      let n = counter.next()
+      guard let image = frame.makeUIImage() else {
+        if n <= 3 || n % 150 == 0 { NSLog("[SecondLook] glasses frame %d: could not convert to image", n) }
+        return
+      }
+      if n <= 2 || n % 300 == 0 { NSLog("[SecondLook] glasses frame %d: %.0fx%.0f", n, image.size.width, image.size.height) }
       box.set(image)
       Task { @MainActor in
         guard let self, self.liveVideoOn, Date().timeIntervalSince(self.lastPreviewAt) > 0.12 else { return }
@@ -388,7 +398,9 @@ final class GlassesManager {
   private func startStream(on session: DeviceSession) throws {
     guard camera == nil else { return }
     // High resolution: we need to read small text on letters and screens.
-    let config = StreamConfiguration(videoCodec: .hvc1, resolution: .high, frameRate: 15)
+    // Raw (uncompressed) frames: VideoFrame.makeUIImage() can't convert hvc1 (HEVC) frames,
+    // and live scan needs images. Medium resolution keeps raw frames within the link budget.
+    let config = StreamConfiguration(videoCodec: .raw, resolution: .medium, frameRate: 15)
     guard let cam = try session.addCamera(config: config) else { throw GlassesError.cameraUnavailable }
     camera = cam
     cam.stream.statePublisher.listen { [weak self] state in
