@@ -225,9 +225,17 @@ footer .cols{display:grid;grid-template-columns:1fr 1fr;gap:40px}
 .sim-cam{position:absolute;will-change:transform}
 .sim-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.86) contrast(1.06)}
 .sim-boxes{position:absolute;inset:0}
-.sim-bx{position:absolute;border:2.5px solid var(--red);border-radius:8px;background:rgba(255,69,58,.12);box-shadow:0 0 22px rgba(255,69,58,.4)}
-.sim-bx b{position:absolute;left:-2px;bottom:calc(100% + 5px);white-space:nowrap;background:var(--red);color:#fff;font-size:12px;font-weight:600;padding:3px 8px;border-radius:6px}
-.sim-bx.amber{border-color:var(--amber);background:rgba(255,159,10,.12)} .sim-bx.amber b{background:var(--amber);color:#111}
+.sim-bx{position:absolute;border-radius:calc(14px * var(--inv,1));border:calc(1.5px * var(--inv,1)) solid rgba(255,105,95,.9);
+  background:radial-gradient(ellipse at center,rgba(255,69,58,.10),rgba(255,69,58,.04) 70%);
+  box-shadow:0 0 calc(28px * var(--inv,1)) calc(8px * var(--inv,1)) rgba(255,69,58,.30),inset 0 0 calc(18px * var(--inv,1)) rgba(255,69,58,.18);
+  animation:simglow 2.6s ease-in-out infinite}
+@keyframes simglow{50%{box-shadow:0 0 calc(44px * var(--inv,1)) calc(14px * var(--inv,1)) rgba(255,69,58,.42),inset 0 0 calc(22px * var(--inv,1)) rgba(255,69,58,.24)}}
+.sim-bx b{position:absolute;left:0;bottom:100%;margin-bottom:calc(8px * var(--inv,1));transform:scale(var(--inv,1));transform-origin:left bottom;
+  white-space:nowrap;background:rgba(20,20,24,.72);backdrop-filter:blur(10px);color:#fff;font-size:12.5px;font-weight:600;letter-spacing:-.005em;
+  padding:5px 10px 5px 22px;border-radius:99px;border:1px solid rgba(255,105,95,.55)}
+.sim-bx b::before{content:"";position:absolute;left:9px;top:50%;width:7px;height:7px;margin-top:-3.5px;border-radius:50%;background:#FF453A;box-shadow:0 0 8px #FF453A}
+.sim-bx.amber{border-color:rgba(255,170,60,.9);box-shadow:0 0 calc(28px * var(--inv,1)) calc(8px * var(--inv,1)) rgba(255,159,10,.30)}
+.sim-bx.amber b{border-color:rgba(255,170,60,.55)} .sim-bx.amber b::before{background:#FF9F0A;box-shadow:0 0 8px #FF9F0A}
 .sim-vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 46% 50% at 50% 50%,rgba(0,0,0,0) 72%,rgba(0,0,0,.75) 90%,#000 100%)}
 .sim-scan{position:absolute;left:0;right:0;height:22%;top:-25%;background:linear-gradient(180deg,rgba(255,214,10,0),rgba(255,214,10,.14),rgba(255,214,10,0));pointer-events:none;opacity:0}
 .sim-status{position:absolute;left:50%;top:6%;transform:translateX(-50%);display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:99px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:rgba(0,0,0,.45);backdrop-filter:blur(10px);color:rgba(255,255,255,.85)}
@@ -235,11 +243,11 @@ footer .cols{display:grid;grid-template-columns:1fr 1fr;gap:40px}
 .sim-status::before{content:"";width:7px;height:7px;border-radius:50%;background:#8e8e93}
 .sim-status.live::before{background:var(--green)} .sim-status.checking::before{background:var(--yel)}
 .sim-status.scam::before{background:var(--red)} .sim-status.suspicious::before{background:var(--amber)}
-.sim-hud{position:absolute;right:13%;top:30%;width:min(250px,30%);padding:14px 16px;border-radius:18px;background:rgba(18,20,26,.6);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.18);opacity:0;font-size:13px}
+.sim-hud{position:absolute;right:11%;top:auto;bottom:14%;width:min(250px,30%);padding:14px 16px;border-radius:18px;background:rgba(18,20,26,.6);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.18);opacity:0;font-size:13px}
 .sim-hud .h{display:flex;align-items:center;gap:7px;font-weight:700;letter-spacing:.06em;font-size:11px}
 .sim-hud .a{font-size:20px;font-weight:600;letter-spacing:-.02em;margin:6px 0 4px}
 .sim-hud .w{color:rgba(255,255,255,.7);font-size:12px}
-.sim-line{min-height:3.2em;margin:18px auto 0;max-width:900px;text-align:center;font-size:clamp(17px,1.4vw,21px);line-height:1.45;color:var(--ink)}
+.sim-line{min-height:1.5em;margin:20px auto 0;max-width:700px;text-align:center;font-size:17px;font-weight:400;line-height:1.4;letter-spacing:-.01em;color:var(--dim2)}
 .sim-call{position:absolute;inset:0;display:none;background:radial-gradient(ellipse at 50% 40%,#2a2440,#0b0b10 70%)}
 .sim-call.on{display:block}
 .sim-hand{position:absolute;left:50%;top:9%;transform:translateX(-50%);width:min(240px,34%);aspect-ratio:9/19;border-radius:34px;background:#111;box-shadow:0 0 0 2px #2c2c30,0 30px 80px rgba(0,0,0,.6);padding:10px}

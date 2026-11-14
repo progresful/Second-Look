@@ -12,10 +12,10 @@
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const SCENES = {
-    messages: { label: 'messages', img: 'media/sim/sms.jpg', key: 'sms', from: 'a delivery text' },
-    emails:   { label: 'emails', img: 'media/sim/gmail.jpg', key: 'gmail', from: 'an email' },
-    websites: { label: 'websites', img: 'media/sim/bank.jpg', key: 'bank', from: 'a web page' },
-    webshops: { label: 'webshops', img: 'media/sim/shop.jpg', key: 'shop', from: 'a webshop' },
+    messages: { label: 'messages', img: 'media/sim/sms.jpg', key: 'sms', short: 'Fake parcel text. Don’t open the link.' },
+    emails:   { label: 'emails', img: 'media/sim/gmail.jpg', key: 'gmail', short: 'Fake security email. Don’t verify through the link.' },
+    websites: { label: 'websites', img: 'media/sim/bank.jpg', key: 'bank', short: 'Fake bank alert. The link isn’t your bank.' },
+    webshops: { label: 'webshops', img: 'media/sim/shop.jpg', key: 'shop', short: 'Fake Ray-Ban shop: ray-band.com, €9.90.' },
     letters:  { label: 'letters & bills', img: null, soon: true },
     qr:       { label: 'qr codes', img: null, soon: true },
     calls:    { label: 'phone calls', call: true },
@@ -49,7 +49,7 @@
     let y0 = 1, x0 = 1, y1 = 0, x1 = 0;
     det.boxes.forEach(({ b }) => { y0 = Math.min(y0, b[0] / 1000); x0 = Math.min(x0, b[1] / 1000); y1 = Math.max(y1, b[2] / 1000); x1 = Math.max(x1, b[3] / 1000); });
     const span = Math.max(x1 - x0, (y1 - y0) * 1.3, .18);
-    return { x: (x0 + x1) / 2, y: (y0 + y1) / 2, z: Math.min(2.6, Math.max(1.3, .62 / span)) };
+    return { x: (x0 + x1) / 2, y: (y0 + y1) / 2, z: Math.min(1.9, Math.max(1.25, .55 / span)) };
   }
   function zoomTo(f, dur) {           // scale around the cam's top-left, then centre the focus point
     const W = lens.clientWidth, H = lens.clientHeight, w = cam.clientWidth, h = cam.clientHeight;
@@ -93,7 +93,7 @@
     if (sc.soon) {
       img.removeAttribute('src'); gsap.set(cam, { scale: 1, x: 0, y: 0 });
       setApp('ready', 'Example for ' + sc.label + ' coming soon. Try another one.');
-      line.textContent = 'Example coming soon: pick messages, emails, websites, webshops or phone calls.';
+      line.textContent = 'Example coming soon.';
       return;
     }
     gsap.set(cam, { scale: 1, x: 0, y: 0, opacity: 0 });
@@ -102,9 +102,10 @@
       setApp(alwaysOn ? 'watching' : 'ready', alwaysOn ? 'I check what you look at and only speak up if something looks wrong.' : 'Look at it and tap check, or press the capture button on your glasses.');
       chip.textContent = alwaysOn ? 'watching' : 'ready'; chip.className = 'sim-status ' + (alwaysOn ? 'live' : '');
       tl = gsap.timeline();
-      tl.add(zoomTo(focusOf(DET[sc.key]), reduce ? 0 : 1.8), .25).add(startDrift, '>-0.2');
+      const fz = focusOf(DET[sc.key]); cam.style.setProperty('--inv', (1 / fz.z).toFixed(3));
+      tl.add(zoomTo(fz, reduce ? 0 : 1.8), .25).add(startDrift, '>-0.2');
       if (alwaysOn) later(reduce ? 0 : 2300, detect);
-      else { checkBtn.classList.add('pulse'); line.textContent = 'On request: tap check (or press the capture button on the glasses).'; }
+      else { checkBtn.classList.add('pulse'); line.textContent = 'Tap check, or press the capture button.'; }
     };
     img.src = sc.img;
   }
@@ -116,19 +117,26 @@
     gsap.fromTo(scan, { top: '-25%', opacity: 1 }, { top: '110%', duration: reduce ? 0 : 1.1, ease: 'power1.inOut', onComplete: () => gsap.set(scan, { opacity: 0 }) });
     later(reduce ? 0 : 1200, () => {
       boxes.innerHTML = '';
-      const seen = new Set();
+      // Merge overlapping boxes into one soft highlight with one short label.
+      const pad = .012, regs = [];
       det.boxes.forEach(({ b, l }) => {
+        const r = { x0: b[1] / 1000 - pad, y0: b[0] / 1000 - pad, x1: b[3] / 1000 + pad, y1: b[2] / 1000 + pad, ls: [l] };
+        const hit = regs.find(q => !(r.x1 < q.x0 || r.x0 > q.x1 || r.y1 < q.y0 || r.y0 > q.y1));
+        if (hit) { hit.x0 = Math.min(hit.x0, r.x0); hit.y0 = Math.min(hit.y0, r.y0); hit.x1 = Math.max(hit.x1, r.x1); hit.y1 = Math.max(hit.y1, r.y1); if (!hit.ls.includes(l)) hit.ls.push(l); }
+        else regs.push(r);
+      });
+      regs.forEach(r => {
         const d = document.createElement('div'); d.className = 'sim-bx' + (det.verdict === 'suspicious' ? ' amber' : '');
-        d.style.cssText = `left:${b[1] / 10 - .6}%;top:${b[0] / 10 - .8}%;width:${(b[3] - b[1]) / 10 + 1.2}%;height:${(b[2] - b[0]) / 10 + 1.6}%`;
-        if (!seen.has(l)) { seen.add(l); d.innerHTML = `<b>${l}</b>`; }
+        d.style.cssText = `left:${r.x0 * 100}%;top:${r.y0 * 100}%;width:${(r.x1 - r.x0) * 100}%;height:${(r.y1 - r.y0) * 100}%`;
+        d.innerHTML = `<b>${r.ls.slice(0, 2).join(' · ')}</b>`;
         boxes.appendChild(d);
       });
-      gsap.fromTo(boxes.children, { opacity: 0, scale: 1.25 }, { opacity: 1, scale: 1, duration: .45, stagger: .16, ease: 'back.out(1.8)' });
+      gsap.fromTo(boxes.children, { opacity: 0 }, { opacity: 1, duration: .8, stagger: .2, ease: 'power2.out' });
       const word2 = det.verdict === 'scam' ? 'LIKELY SCAM' : det.verdict === 'suspicious' ? 'BE CAREFUL' : 'NO SCAM SIGNS';
       showHud(word2, det.verdict === 'scam' ? "Don't pay or reply." : 'Check before you pay.', det.signs.slice(0, 2).join(' · '), det.verdict);
       chip.textContent = word2.toLowerCase(); chip.className = 'sim-status ' + det.verdict;
-      typeLine(det.reason);
-      setApp(word2.toLowerCase(), det.reason, det.verdict);
+      typeLine(sc.short);
+      setApp(word2.toLowerCase(), sc.short, det.verdict);
       showCard(word2, det.verdict === 'scam' ? "Don't pay or reply." : 'Check before you pay.', det.reason, det.signs.slice(0, 3), det.verdict);
     });
   }
@@ -161,7 +169,7 @@
     cap.innerHTML = ''; setApp(start ? 'listening' : 'ready', start ? 'Listening to this call through the glasses mic.' : 'Tap the call button (or check) to let Second Look listen.');
     chip.textContent = start ? 'listening' : 'ready'; chip.className = 'sim-status ' + (start ? 'live' : '');
     gsap.fromTo('.sim-call .sim-hand', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: .8, ease: 'power3.out' });
-    if (!start) { checkBtn.classList.add('pulse'); line.textContent = 'On request: tap check to listen to this call.'; return; }
+    if (!start) { checkBtn.classList.add('pulse'); line.textContent = 'Tap check to listen to this call.'; return; }
     let sec = 0; const tick = () => { sec++; timer.textContent = `0:${String(sec).padStart(2, '0')}`; later(1000, tick); }; later(1000, tick);
     CALL.forEach((t, i) => later(900 + i * 2300, () => {
       const p = document.createElement('p'); p.textContent = '“' + t + '”'; cap.appendChild(p);
@@ -171,7 +179,7 @@
         callView.classList.add('alarm');
         showHud('LIKELY SCAM', 'Hang up. Don\'t share the code.', 'Asks for codes · “Safe account”', 'scam');
         chip.textContent = 'likely scam'; chip.className = 'sim-status scam';
-        typeLine(why); setApp('likely scam', why, 'scam');
+        typeLine('Fake bank call. Never share a code.'); setApp('likely scam', 'Fake bank call. Never share a code.', 'scam');
         showCard('LIKELY SCAM', 'Hang up. Don\'t share the code.', why, ['Asks for codes or passwords', '“Safe account”'], 'scam');
       }
     }));
@@ -181,7 +189,7 @@
   fetch('media/sim/detections.json').then(r => r.json()).then(d => { DET = d; }).finally(() => {
     // start when the section comes into view
     let started = false;
-    const start = () => { if (started) return; started = true; select('messages', false); };
+    const start = () => { if (started) return; started = true; if (!current) select('messages', false); };
     const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); start(); } }, { threshold: .15 });
     io.observe(root);
     const onScroll = () => { const r = root.getBoundingClientRect(); if (r.top < innerHeight * .6 && r.bottom > 0) { removeEventListener('scroll', onScroll); start(); } };
