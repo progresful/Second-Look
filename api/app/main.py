@@ -20,14 +20,14 @@ app = FastAPI(title="Second Look", version="0.1.0",
 app.add_middleware(CORSMiddleware, allow_origins=os.getenv("CORS_ORIGINS", "*").split(","),
                    allow_methods=["GET", "POST"], allow_headers=["*"])
 
-# Over the public tunnel, checks need the app's token, so strangers can't spend the
-# Gemini quota. Direct local requests (Mac, same Wi-Fi, web demo) don't.
+# Through a public proxy (Cloudflare tunnel or nginx), checks need the app's token, so
+# strangers can't spend the Gemini quota. Direct local requests (Mac, same Wi-Fi) don't.
 APP_TOKEN = os.getenv("APP_TOKEN", "")
 
 
 @app.middleware("http")
 async def require_token_via_tunnel(request: Request, call_next):
-    via_tunnel = "cf-connecting-ip" in request.headers
+    via_tunnel = "cf-connecting-ip" in request.headers or "x-forwarded-for" in request.headers
     if APP_TOKEN and via_tunnel and request.method == "POST" and \
             not hmac.compare_digest(request.headers.get("x-app-token", ""), APP_TOKEN):
         return JSONResponse({"detail": "Missing or wrong app token."}, status_code=401)

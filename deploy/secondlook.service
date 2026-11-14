@@ -1,0 +1,17 @@
+[Unit]
+Description=Second Look API
+After=network.target
+
+[Service]
+User=secondlook
+WorkingDirectory=/opt/secondlook/api
+EnvironmentFile=/opt/secondlook/api/.env
+ExecStart=/opt/secondlook/api/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8770 --workers 2 --proxy-headers
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target
