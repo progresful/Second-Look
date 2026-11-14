@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Second Look: a second opinion before you pay</title>
+<meta name="description" content="Look at a letter, text or webshop through your Meta AI glasses and hear in seconds if it shows scam signs, and why.">
+<link rel="icon" href="media/icon.png">
+<meta property="og:title" content="Second Look">
+<meta property="og:description" content="A second opinion before you pay. Scam signs, spotted where you look.">
+<meta property="og:image" content="media/hero-poster.jpg">
+<style>
+:root{
+  --bg:#050507; --ink:#f4f1ec; --dim:rgba(244,241,236,.62); --line:rgba(255,255,255,.12);
+  --red:#FF453A; --amber:#FF9F0A; --yel:#FFD60A; --green:#30D158; --blue:#5E8BFF;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter","Helvetica Neue",Arial,sans-serif;
+  --serif:"New York",ui-serif,"Iowan Old Style","Georgia",serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+body{overflow-x:hidden}
+a{color:inherit}
+::selection{background:var(--red);color:#fff}
+.wrap{width:min(1200px,92vw);margin:0 auto}
+.kicker{font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+.serif{font-family:var(--serif);font-weight:400}
+.grain{position:fixed;inset:0;pointer-events:none;z-index:50;opacity:.06;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+
+/* ---------- nav ---------- */
+nav{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;align-items:center;justify-content:space-between;padding:18px 4vw;
+  background:linear-gradient(180deg,rgba(5,5,7,.85),rgba(5,5,7,0))}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-size:20px;text-decoration:none}
+.brand img{width:30px;height:30px;border-radius:8px}
+nav ul{display:flex;gap:28px;list-style:none;font-size:14px;color:var(--dim)}
+nav ul a{text-decoration:none;transition:color .2s} nav ul a:hover{color:var(--ink)}
+.pill{font-size:12px;font-weight:600;padding:8px 14px;border-radius:99px;border:1px solid var(--line);color:var(--dim)}
+@media(max-width:800px){nav ul{display:none}}
+
+/* ---------- hero ---------- */
+.hero{position:relative;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:84px 0 70px;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:-20%;background:radial-gradient(ellipse at 50% 55%,rgba(94,139,255,.10),rgba(5,5,7,0) 55%);pointer-events:none}
+.transcript{position:relative;width:min(900px,90vw);text-align:center;min-height:86px}
+.transcript .live{display:inline-flex;align-items:center;gap:8px;margin-bottom:14px}
+.transcript .live i{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 0 0 rgba(255,69,58,.6);animation:pulse 1.6s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 10px rgba(255,69,58,0)}100%{box-shadow:0 0 0 0 rgba(255,69,58,0)}}
+.transcript p{font-family:var(--serif);font-size:clamp(22px,2.6vw,34px);line-height:1.25;min-height:1.3em}
+.transcript p .voice{color:var(--yel)}
+.caret{display:inline-block;width:2px;height:1em;background:var(--ink);vertical-align:-.12em;margin-left:3px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+.stage{position:relative;width:min(1180px,96vw,108svh);aspect-ratio:16/9;margin:14px auto 0}
+.stage video,.stage .boxes{position:absolute;inset:0;width:100%;height:100%}
+.stage video{object-fit:cover;filter:saturate(1.05) contrast(1.05)}
+.boxes .bx{position:absolute;border:3px solid var(--red);border-radius:8px;background:rgba(255,69,58,.14);opacity:0;transform:scale(1.15)}
+.boxes .bx b{position:absolute;left:-3px;bottom:calc(100% + 6px);white-space:nowrap;background:var(--red);color:#fff;font-size:clamp(10px,1vw,13px);font-weight:700;padding:4px 8px;border-radius:6px}
+.boxes .bx.below b{bottom:auto;top:calc(100% + 6px)}
+.boxes .bx.amber{border-color:var(--amber);background:rgba(255,159,10,.14)} .boxes .bx.amber b{background:var(--amber);color:#111}
+.scanline{position:absolute;left:0;right:0;height:22%;top:-22%;background:linear-gradient(180deg,rgba(255,214,10,0),rgba(255,214,10,.12),rgba(255,214,10,0));pointer-events:none;opacity:0}
+.dark{position:absolute;inset:-2px;width:calc(100% + 4px);height:calc(100% + 4px);pointer-events:none}
+.frame{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.frame path{fill:none;stroke:#1b1c22;stroke-width:22;stroke-linejoin:round}
+.frame .rim{stroke:url(#rim);stroke-width:4}
+.frame .temple{stroke:#15161b;stroke-width:22;stroke-linecap:round}
+.hud{position:absolute;right:13.5%;top:23%;width:22%;min-width:170px;padding:14px 16px;border-radius:14px;background:rgba(20,22,30,.72);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.16);opacity:0;transform:translateY(10px);font-size:clamp(11px,1.05vw,15px)}
+.hud .h{display:flex;align-items:center;gap:8px;font-weight:800;letter-spacing:.08em;font-size:.85em}
+.hud .h svg{width:16px;height:16px}
+.hud .a{font-family:var(--serif);font-size:1.45em;margin:6px 0 4px;line-height:1.1}
+.hud .w{color:var(--dim);font-size:.85em;line-height:1.3}
+.hud small{display:block;margin-top:8px;font-size:.7em;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+
+.signs{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:4px;min-height:46px;width:min(900px,92vw)}
+.sign{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:99px;font-size:14px;font-weight:600;
+  background:rgba(255,255,255,.06);border:1px solid var(--line);opacity:0;transform:translateY(12px)}
+.sign i{width:8px;height:8px;border-radius:50%;background:var(--red)}
+.sign.verdict{background:var(--red);border-color:var(--red);color:#fff;letter-spacing:.06em}
+.sign.verdict.amber{background:var(--amber);border-color:var(--amber);color:#111}
+.sign.amber i{background:var(--amber)}
+.hero h1{position:relative;margin-top:44px;text-align:center;font-family:var(--serif);font-weight:400;font-size:clamp(40px,6vw,86px);line-height:1;letter-spacing:-.02em}
+.hero h1 em{font-style:italic;color:var(--yel)}
+.hero .sub{margin-top:16px;color:var(--dim);font-size:clamp(16px,1.4vw,19px);text-align:center;max-width:640px}
+.note{font-size:12px;color:var(--dim);opacity:.7;margin-top:18px;text-align:center}
+.scrollcue{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.2em;color:var(--dim)}
+
+/* ---------- story ---------- */
+.story{position:relative;display:grid;grid-template-columns:1.05fr .95fr;gap:4vw;padding:6vh 0 10vh}
+.steps{display:flex;flex-direction:column}
+.step{min-height:92vh;display:flex;flex-direction:column;justify-content:center;padding:6vh 0}
+.step h2{font-family:var(--serif);font-weight:400;font-size:clamp(34px,4.2vw,62px);line-height:1.04;letter-spacing:-.015em;margin:14px 0 18px}
+.step h2 em{font-style:italic}
+.step p{color:var(--dim);font-size:clamp(16px,1.25vw,19px);line-height:1.55;max-width:560px}
+.stat{display:grid;grid-template-columns:auto 1fr;gap:6px 22px;align-items:baseline;margin-top:26px}
+.stat .n{font-size:clamp(46px,5.4vw,84px);font-weight:800;letter-spacing:-.04em;line-height:1}
+.stat .n.red{color:var(--red)} .stat .n.yel{color:var(--yel)}
+.stat .l{font-size:16px;line-height:1.35;color:var(--ink);max-width:300px}
+.src{display:block;margin-top:18px;font-size:12px;color:var(--dim);opacity:.75}
+.src a{text-decoration-color:rgba(255,255,255,.25)}
+.flow{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:28px}
+.flow div{padding:18px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid var(--line);font-size:14px;color:var(--dim);line-height:1.4}
+.flow b{display:block;color:var(--ink);font-size:17px;margin:6px 0 4px}
+.flow span{font-size:12px;letter-spacing:.18em;color:var(--yel);font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.chips span{padding:8px 14px;border-radius:99px;border:1px solid var(--line);font-size:14px;background:rgba(255,255,255,.04)}
+
+.phonecol{position:relative}
+.sticky{position:sticky;top:8vh;height:84vh;display:flex;align-items:center;justify-content:center}
+.phone{position:relative;width:min(370px,30vw);aspect-ratio:390/844;border-radius:56px;padding:12px;background:#0d0e12;
+  box-shadow:0 0 0 1.5px #2a2c33,0 40px 120px rgba(0,0,0,.6),0 0 140px rgba(94,139,255,.18);transition:box-shadow 1s}
+.screen{position:relative;width:100%;height:100%;border-radius:44px;overflow:hidden;background:#F6EEE6;color:#fff;font-size:calc(min(370px,30vw)/390*16)}
+.island{position:absolute;top:1.6%;left:50%;transform:translateX(-50%);width:32%;height:3.6%;border-radius:99px;background:#000;z-index:9}
+.aura{position:absolute;inset:-25%;filter:blur(40px);transition:background-color 1.2s}
+.aura i{position:absolute;width:75%;height:55%;border-radius:50%;transition:background 1.2s}
+.aura i:nth-child(1){left:-5%;top:15%;animation:drift1 14s ease-in-out infinite}
+.aura i:nth-child(2){right:-10%;top:40%;animation:drift2 17s ease-in-out infinite}
+.aura i:nth-child(3){left:20%;top:-5%;animation:drift3 12s ease-in-out infinite}
+@keyframes drift1{50%{transform:translate(18%,10%) scale(1.15)}}
+@keyframes drift2{50%{transform:translate(-20%,-12%) scale(.9)}}
+@keyframes drift3{50%{transform:translate(10%,25%) scale(1.1)}}
+.shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,0) 40%,rgba(0,0,0,.2))}
+.ui{position:absolute;inset:0;padding:15% 7% 6%;display:flex;flex-direction:column;text-shadow:0 1px 8px rgba(0,0,0,.08)}
+.statusbar{position:absolute;top:2.2%;left:9%;right:8%;display:flex;justify-content:space-between;font-size:.9em;font-weight:600;color:#111;z-index:8}
+.hdr{display:flex;justify-content:space-between;align-items:center;font-size:.86em;opacity:.9}
+.hdr .dot{display:inline-block;width:.45em;height:.45em;border-radius:50%;background:rgba(255,255,255,.55);margin-right:.4em}
+.hdr .sl{font-family:var(--serif);font-size:1.05em}
+.view{position:absolute;left:7%;right:7%;top:20%;bottom:15%;opacity:0;visibility:hidden}
+.view.on{opacity:1;visibility:visible}
+.word{font-family:var(--serif);font-size:2.9em;line-height:1}
+.para{font-size:1.02em;line-height:1.35;opacity:.93;margin-top:.5em}
+.quote{font-family:var(--serif);font-style:italic;font-size:1em;opacity:.85;margin-top:.7em;line-height:1.35}
+.plabel{font-size:.72em;letter-spacing:.14em;opacity:.75;margin-top:1.6em}
+.plist div{font-size:1.65em;font-weight:300;line-height:1.3;transition:opacity .4s}
+.plist div.off{opacity:.38}
+.toggle{display:inline-flex;margin-top:1.1em;padding:.2em;border-radius:99px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);font-size:.86em;font-weight:600;position:relative}
+.toggle span{position:relative;z-index:1;padding:.6em 1em;transition:color .4s}
+.toggle .knob{position:absolute;top:.2em;bottom:.2em;left:.2em;width:50%;border-radius:99px;background:#fff;transition:transform .5s cubic-bezier(.7,0,.2,1)}
+.toggle.on .knob{transform:translateX(96%)}
+.toggle span.sel{color:#111}
+.bottombar{position:absolute;left:7%;right:7%;bottom:4.5%;display:flex;align-items:center;gap:3%}
+.cbtn{width:2.9em;height:2.9em;border-radius:50%;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.35);display:grid;place-items:center;font-weight:700}
+.check{margin-left:auto;display:flex;align-items:center;gap:.6em;background:#fff;color:#111;border-radius:99px;padding:.55em .55em .55em 1.1em;font-weight:500;font-size:1.05em}
+.check i{width:1.6em;height:1.6em;border-radius:50%;background:rgba(0,0,0,.08);display:grid;place-items:center;font-style:normal;font-size:.75em;font-weight:700}
+/* alert card (matches AlertCard.swift) */
+.card{border-radius:1.75em;padding:1.3em;background:rgba(219,38,38,.55);border:1px solid rgba(255,255,255,.25);box-shadow:0 8px 18px rgba(0,0,0,.18)}
+.card.amber{background:rgba(235,120,20,.55)} .card.green{background:rgba(33,153,89,.55)}
+.card .ch{display:flex;align-items:center;gap:.6em;font-size:.82em;font-weight:800;letter-spacing:.1em}
+.card .ch b{width:2.1em;height:2.1em;border-radius:50%;background:#fff;color:#dc2626;display:grid;place-items:center;font-size:.95em}
+.card.green .ch b{color:#21995a}
+.card .act{font-family:var(--serif);font-size:2.05em;line-height:1.08;margin:.45em 0 .4em}
+.card .cwhy{font-size:1.02em;line-height:1.35}
+.card .cl{font-size:.68em;letter-spacing:.12em;opacity:.8;margin-top:1em}
+.card .cps{display:flex;flex-wrap:wrap;gap:.45em;margin-top:.5em}
+.card .cps span{font-size:.82em;font-weight:600;padding:.4em .75em;border-radius:99px;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.35)}
+.card .next{margin-top:1em;padding:.85em;border-radius:1em;background:rgba(255,255,255,.16);font-size:.92em;font-weight:500}
+.card .btns{display:flex;justify-content:space-between;margin-top:1em;font-size:.9em;font-weight:600}
+.card .btns span{padding:.65em 1em;border-radius:99px;background:rgba(255,255,255,.2)}
+.card .btns span.done{background:#fff;color:#111;padding:.65em 1.4em}
+/* live scan */
+.cam{position:absolute;inset:0;background:#000 url(media/hero-poster.jpg) 32% 50%/auto 100% no-repeat}
+.cam .chip{position:absolute;top:6.5%;left:6%;display:flex;align-items:center;gap:.5em;padding:.55em .9em;border-radius:99px;background:rgba(30,30,30,.55);backdrop-filter:blur(8px);font-size:.85em;font-weight:600}
+.cam .chip i{width:.55em;height:.55em;border-radius:50%;background:var(--green)}
+.cam .region{position:absolute;left:4%;right:4%;top:20%;bottom:30%;border:2px dashed var(--yel);border-radius:14px}
+.cam .rb{position:absolute;border:2.5px solid var(--red);border-radius:6px;background:rgba(255,69,58,.15)}
+.cam .rb b{position:absolute;left:-2px;bottom:calc(100% + 4px);white-space:nowrap;background:var(--red);font-size:.7em;padding:.2em .5em;border-radius:5px}
+.cam .card{position:absolute;left:4%;right:4%;bottom:4%;background:rgba(219,38,38,.92);padding:1em}
+.cam .card .act{font-size:1.55em}
+.wave{display:flex;gap:.25em;align-items:center;height:2.2em;margin-top:1em}
+.wave i{width:.32em;border-radius:99px;background:#fff;height:30%;animation:wv 1s ease-in-out infinite}
+.wave i:nth-child(2n){animation-delay:.15s}.wave i:nth-child(3n){animation-delay:.3s}.wave i:nth-child(5n){animation-delay:.45s}
+@keyframes wv{50%{height:100%}}
+.phonecap{position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:12px;color:var(--dim)}
+
+/* ---------- why ---------- */
+.why{padding:12vh 0}
+.why h2{font-family:var(--serif);font-weight:400;font-size:clamp(36px,4.6vw,68px);line-height:1.04;max-width:900px}
+.table{margin-top:48px;border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:2.2fr repeat(4,1fr);align-items:center;border-bottom:1px solid var(--line);padding:18px 0;font-size:15px}
+.row.head{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.row div:not(:first-child){text-align:center}
+.row .me{color:var(--yel);font-weight:800}
+.yes{color:var(--green);font-weight:800}.no{color:rgba(255,255,255,.28)}.part{color:var(--amber)}
+@media(max-width:800px){.row{grid-template-columns:1.6fr repeat(4,1fr);font-size:12px}}
+.end{position:relative;min-height:90vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;overflow:hidden}
+.end::before{content:"";position:absolute;width:900px;height:900px;border-radius:50%;background:radial-gradient(circle,rgba(31,59,224,.35),rgba(44,195,255,.12) 40%,rgba(5,5,7,0) 70%);filter:blur(20px)}
+.end img{position:relative;width:120px;border-radius:28px;box-shadow:0 30px 90px rgba(80,120,255,.45)}
+.end h2{position:relative;font-family:var(--serif);font-weight:400;font-size:clamp(46px,7vw,110px);margin-top:28px;letter-spacing:-.02em}
+.end p{position:relative;color:var(--dim);margin-top:10px;font-size:18px}
+footer{border-top:1px solid var(--line);padding:40px 0 60px;font-size:13px;color:var(--dim);line-height:1.7}
+footer h4{color:var(--ink);font-size:13px;margin-bottom:8px}
+footer .cols{display:grid;grid-template-columns:1fr 1fr;gap:40px}
+@media(max-width:900px){.story{grid-template-columns:1fr}.phonecol{display:none}.flow{grid-template-columns:1fr}footer .cols{grid-template-columns:1fr}}
+@media(max-width:640px){.hud{min-width:0;width:30%;padding:7px 9px;font-size:8px;right:12%;top:20%}.hud .w,.hud small{display:none}.boxes .bx b{font-size:9px;padding:2px 5px}.sign{font-size:12px;padding:8px 12px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<nav>
+  <a class="brand" href="#top"><img src="media/icon.png" alt="">Second Look</a>
+  <ul><li><a href="#problem">Problem</a></li><li><a href="#how">How it works</a></li><li><a href="#features">Features</a></li><li><a href="#why">Why us</a></li></ul>
+  <span class="pill">Built for Meta AI glasses</span>
+</nav>
+
+<!-- ================= HERO: a live demo seen through the glasses ================= -->
+<header class="hero" id="top">
+  <div class="transcript" aria-live="polite">
+    <div class="live kicker"><i></i>Live · what Second Look sees</div>
+    <p id="line"><span id="lineText"></span><span class="caret"></span></p>
+  </div>
+
+  <div class="stage" id="stage">
+    <video id="vid" src="media/hero.mp4" poster="media/hero-poster.jpg" muted playsinline loop preload="auto" aria-label="Demo: a fake Ray-Ban webshop and a job-scam email, seen through glasses"></video>
+    <div class="scanline" id="scan"></div>
+    <div class="boxes" id="boxes"></div>
+    <svg class="dark" viewBox="0 0 1600 900" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <mask id="lenses">
+          <rect width="1600" height="900" fill="white"/>
+          <path id="lensL" d="M95 175 C95 120 140 95 210 95 L700 95 C760 95 790 125 790 185 L780 600 C775 730 700 800 560 805 L300 805 C170 800 105 720 100 600 Z" fill="black"/>
+          <path id="lensR" d="M1505 175 C1505 120 1460 95 1390 95 L900 95 C840 95 810 125 810 185 L820 600 C825 730 900 800 1040 805 L1300 805 C1430 800 1495 720 1500 600 Z" fill="black"/>
+        </mask>
+        <radialGradient id="vig" cx="50%" cy="50%" r="60%"><stop offset="35%" stop-color="#050507" stop-opacity=".93"/><stop offset="80%" stop-color="#050507" stop-opacity="1"/></radialGradient>
+      </defs>
+      <rect width="1600" height="900" fill="url(#vig)" mask="url(#lenses)"/>
+    </svg>
+    <svg class="frame" viewBox="0 0 1600 900" preserveAspectRatio="none" aria-hidden="true">
+      <defs><linearGradient id="rim" x1="0" x2="1"><stop offset="0" stop-color="#5E8BFF" stop-opacity=".0"/><stop offset=".5" stop-color="#9fb4ff" stop-opacity=".7"/><stop offset="1" stop-color="#5E8BFF" stop-opacity="0"/></linearGradient></defs>
+      <path class="temple" d="M95 200 L-60 170"/><path class="temple" d="M1505 200 L1660 170"/>
+      <path class="fr" d="M95 175 C95 120 140 95 210 95 L700 95 C760 95 790 125 790 185 L780 600 C775 730 700 800 560 805 L300 805 C170 800 105 720 100 600 Z"/>
+      <path class="fr" d="M1505 175 C1505 120 1460 95 1390 95 L900 95 C840 95 810 125 810 185 L820 600 C825 730 900 800 1040 805 L1300 805 C1430 800 1495 720 1500 600 Z"/>
+      <path class="fr" d="M790 210 C795 175 805 175 810 210"/>
+      <path class="rim" d="M120 110 L780 110"/><path class="rim" d="M820 110 L1480 110"/>
+    </svg>
+    <div class="hud" id="hud" aria-hidden="true">
+      <div class="h"><svg viewBox="0 0 24 24" fill="#FF453A"><path d="M12 2 1 21h22L12 2zm1 15h-2v-2h2v2zm0-4h-2V9h2v4z"/></svg><span id="hudWord">LIKELY SCAM</span></div>
+      <div class="a" id="hudAct">Don't pay or reply.</div>
+      <div class="w" id="hudWhy">Lookalike domain · Price far below normal</div>
+      <small>On the glasses display</small>
+    </div>
+  </div>
+
+  <div class="signs" id="signs" aria-live="polite"></div>
+
+  <h1>A second opinion,<br><em>before you pay.</em></h1>
+  <p class="sub">Look at a letter, a message or a webshop. Second Look reads it, finds the scam signs, and tells you why, out loud, in seconds.</p>
+  <p class="note">Real iPhone footage. Boxes, signs and verdicts are Second Look's actual output for these frames.</p>
+  <div class="scrollcue">SCROLL</div>
+</header>
+
+<!-- ================= STORY: problem, how, features (left) + live app (right) ================= -->
+<main class="wrap">
+<section class="story">
+  <div class="steps">
+    <article class="step" id="problem" data-phone="ready">
+      <span class="kicker">The problem</span>
+      <h2>More than half of adults met a scam <em>last year.</em></h2>
+      <div class="stat"><div class="n red" data-count="57" data-suffix="%">57%</div><div class="l">of adults worldwide experienced a scam in the past 12 months</div>
+        <div class="n" data-count="23" data-suffix="%">23%</div><div class="l">lost money. Shopping scams hit 54% of victims.</div></div>
+      <span class="src">Global Anti-Scam Alliance &amp; Feedzai, <a href="https://www.gasa.org/post/global-scams-on-the-rise-over-half-of-adults-worldwide-report-scam-encounters" target="_blank" rel="noopener">Global State of Scams 2025</a> · 46,000 adults, 42 markets</span>
+    </article>
+
+    <article class="step" data-phone="checking">
+      <span class="kicker">Europe</span>
+      <h2>€4.2 billion in payment fraud. <em>Mostly paid by people.</em></h2>
+      <div class="stat"><div class="n red" data-count="4.2" data-prefix="€" data-suffix="B" data-dec="1">€4.2B</div><div class="l">payment fraud in the EEA in 2024, up from €3.5B</div>
+        <div class="n yel" data-count="85" data-prefix="~" data-suffix="%">~85%</div><div class="l">of credit-transfer fraud losses were borne by the users, mostly tricked into paying</div></div>
+      <span class="src">EBA &amp; ECB, <a href="https://www.eba.europa.eu/publications-and-media/press-releases/joint-eba-ecb-report-payment-fraud-strong-authentication-remains-effective-fraudsters-are-adapting" target="_blank" rel="noopener">joint report on payment fraud</a>, Dec 2025</span>
+    </article>
+
+    <article class="step" data-phone="call">
+      <span class="kicker">Finland</span>
+      <h2>Finns lost €72.5 million. A “safe account” call took <em>€38.4M.</em></h2>
+      <div class="stat"><div class="n red" data-count="72.5" data-prefix="€" data-suffix="M" data-dec="1">€72.5M</div><div class="l">lost to digital fraud in 2025, up from €62.9M</div>
+        <div class="n" data-count="148" data-prefix="€" data-suffix="M">€148M</div><div class="l">attempted. Phishing targeted almost 17,000 people.</div></div>
+      <span class="src">Finance Finland, bank data, <a href="https://www.finanssiala.fi/en/news/total-value-of-attempted-digital-fraud-climbed-to-148-million/" target="_blank" rel="noopener">Feb 2026</a></span>
+      <p style="margin-top:22px">Scams don't wait in an inbox. They're on a laptop at checkout, on a paper letter, in a phone call. The moment that matters is right before you pay.</p>
+    </article>
+
+    <article class="step" id="how" data-phone="scan">
+      <span class="kicker">How it works</span>
+      <h2>Just look. <em>It reads, checks, and speaks.</em></h2>
+      <div class="flow">
+        <div><span>01</span><b>Your phone reads</b>the text on the device, twice a second. Nothing leaves yet.</div>
+        <div><span>02</span><b>Only if it matters</b>one frame is checked with Gemini, in about two seconds.</div>
+        <div><span>03</span><b>You hear why</b>one plain sentence, and a card on the glasses display.</div>
+      </div>
+      <p style="margin-top:22px">Second Look boxes the message it's reading in yellow and marks each scam sign in red: a look-alike address, a price far below normal, a request for codes.</p>
+    </article>
+
+    <article class="step" id="features" data-phone="alert">
+      <span class="kicker">Clear answers</span>
+      <h2>Not just a red flag. <em>The reason.</em></h2>
+      <p>Every check ends in one of four answers: likely scam, be careful, looks okay, or not sure. Each comes with what to do, why, and the exact signs it noticed. It never says something is “safe”.</p>
+      <div class="chips"><span>24 kinds of scam signs</span><span>Prices that don't add up</span><span>Look-alike web addresses</span><span>Codes &amp; “safe accounts”</span></div>
+    </article>
+
+    <article class="step" data-phone="listen">
+      <span class="kicker">Call check</span>
+      <h2>Listens to the call. <em>Warns mid-call.</em></h2>
+      <p>Turn it on for a call you're unsure about. It shows a live caption of what's said and speaks up the moment a caller asks for a code, a transfer to a “safe account” or remote access.</p>
+    </article>
+
+    <article class="step" data-phone="options">
+      <span class="kicker">You choose</span>
+      <h2>Guard what matters, <em>on request or always on.</em></h2>
+      <div class="chips"><span>Letters &amp; bills</span><span>Messages</span><span>Websites</span><span>Webshops</span><span>QR codes</span><span>Phone calls</span></div>
+      <p style="margin-top:22px">On request: tap check or press the glasses' capture button. Always on: it watches quietly and only speaks up if something looks wrong.</p>
+    </article>
+
+    <article class="step" data-phone="voice">
+      <span class="kicker">Warm voice, private by design</span>
+      <h2>A calm voice that <em>runs on your phone.</em></h2>
+      <p>Answers are spoken in a warm voice (Kokoro-82M) generated on the iPhone itself, so it keeps talking offline. Card numbers, IBANs, personal IDs, phone numbers and emails are removed before any text leaves the phone. Nothing is stored.</p>
+    </article>
+  </div>
+
+  <div class="phonecol" aria-hidden="true">
+    <div class="sticky">
+      <div class="phone" id="phone">
+        <div class="screen" id="screen">
+          <div class="aura" id="aura"><i></i><i></i><i></i></div>
+          <div class="shade"></div>
+          <div class="island"></div>
+          <div class="statusbar"><span>9:41</span><span>●●● ⌁ ▮</span></div>
+          <div class="ui">
+            <div class="hdr"><span><span class="dot"></span>glasses connected</span><span class="sl">second look</span></div>
+          </div>
+
+          <!-- home / ready / checking / watching / listening -->
+          <div class="view on" id="v-home">
+            <div class="word" id="hWord">ready</div>
+            <div class="para" id="hPara">Look at it and tap check, or press the capture button on your glasses.</div>
+            <div class="quote" id="hQuote" style="display:none"></div>
+            <div class="plabel">PROTECT ME FROM</div>
+            <div class="plist" id="plist"><div>letters &amp; bills</div><div>messages</div><div>websites</div><div>webshops</div><div class="off">qr codes</div><div>phone calls</div></div>
+            <div class="toggle" id="toggle"><div class="knob"></div><span class="sel">on request</span><span>always on</span></div>
+          </div>
+
+          <!-- alert card -->
+          <div class="view" id="v-alert">
+            <div class="card" id="card">
+              <div class="ch"><b>!</b><span id="cWord">LIKELY SCAM</span></div>
+              <div class="act" id="cAct">Don't pay or reply.</div>
+              <div class="cwhy" id="cWhy">Uses the name 'ray-ban.com' but ray-band.com is not its official website.</div>
+              <div class="cl">WHAT I NOTICED</div>
+              <div class="cps" id="cChips"><span>Lookalike domain</span><span>Price far below normal</span></div>
+              <div class="next">☎︎ Call the official number, for example the one on your card.</div>
+              <div class="btns"><span>🔊 Hear again</span><span class="done">Done</span></div>
+            </div>
+            <div class="wave" id="wave" style="display:none"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          </div>
+
+          <!-- live scan -->
+          <div class="view" id="v-scan" style="inset:0">
+            <div class="cam">
+              <div class="chip"><i></i>watching</div>
+              <div class="region"></div>
+              <div class="rb" style="left:-2%;top:17%;width:70%;height:3.5%"><b>Lookalike domain</b></div>
+              <div class="rb" style="left:58%;top:62%;width:16%;height:3%"><b>Price far below normal</b></div>
+              <div class="card"><div class="ch"><b>!</b>LIKELY SCAM</div><div class="act">Don't pay or reply.</div>
+                <div class="cwhy" style="font-size:.85em">Uses the name 'ray-ban.com' but ray-band.com is not its official website.</div></div>
+            </div>
+          </div>
+
+          <div class="bottombar" id="bbar"><div class="cbtn">···</div><div class="cbtn" id="callBtn" style="margin-left:auto">✆</div><div class="check" style="margin-left:0">check <i>›</i></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ================= WHY ================= -->
+<section class="why wrap" id="why">
+  <span class="kicker">Why Second Look</span>
+  <h2>Other protection waits in one app. <em class="serif" style="font-style:italic">Scams don't.</em></h2>
+  <div class="table" role="table">
+    <div class="row head" role="row"><div>What you get</div><div class="me">Second Look</div><div>Email spam filter</div><div>Browser warning</div><div>Bank alert</div></div>
+    <div class="row" role="row"><div>Works on paper, laptops, other people's phones</div><div class="yes">✓</div><div class="no">—</div><div class="no">—</div><div class="no">—</div></div>
+    <div class="row" role="row"><div>Checks before you pay, hands-free</div><div class="yes">✓</div><div class="no">—</div><div class="part">partly</div><div class="no">—</div></div>
+    <div class="row" role="row"><div>Explains why, in one plain sentence</div><div class="yes">✓</div><div class="no">—</div><div class="part">partly</div><div class="part">partly</div></div>
+    <div class="row" role="row"><div>Checks if prices add up and addresses are look-alikes</div><div class="yes">✓</div><div class="no">—</div><div class="part">known sites</div><div class="no">—</div></div>
+    <div class="row" role="row"><div>Listens to a suspicious call, warns mid-call</div><div class="yes">✓</div><div class="no">—</div><div class="no">—</div><div class="no">—</div></div>
+    <div class="row" role="row"><div>Personal numbers removed first, nothing stored</div><div class="yes">✓</div><div class="no">n/a</div><div class="no">n/a</div><div class="no">n/a</div></div>
+  </div>
+  <p class="src">Comparison describes typical tools in each category, not specific products.</p>
+</section>
+
+<section class="end">
+  <img src="media/icon.png" alt="Second Look icon">
+  <h2>Second Look</h2>
+  <p>A second opinion before you pay.</p>
+  <p style="font-size:14px;margin-top:26px">Built for Meta AI glasses · Junction 2026 · Meta track</p>
+</section>
+
+<footer class="wrap">
+  <div class="cols">
+    <div><h4>Status, honestly</h4>
+      Shown here on iPhone footage and the iPhone app. The glasses capture, capture button and Display card are built on Meta's Device Access Toolkit but have not yet been tested on glasses. Call check was shown with a scripted call in the simulator.</div>
+    <div><h4>Sources</h4>
+      <a href="https://www.gasa.org/post/global-scams-on-the-rise-over-half-of-adults-worldwide-report-scam-encounters" target="_blank" rel="noopener">GASA &amp; Feedzai, Global State of Scams 2025</a><br>
+      <a href="https://www.eba.europa.eu/publications-and-media/press-releases/joint-eba-ecb-report-payment-fraud-strong-authentication-remains-effective-fraudsters-are-adapting" target="_blank" rel="noopener">EBA &amp; ECB joint report on payment fraud, Dec 2025</a><br>
+      <a href="https://www.finanssiala.fi/en/news/total-value-of-attempted-digital-fraud-climbed-to-148-million/" target="_blank" rel="noopener">Finance Finland, digital fraud 2025</a></div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+gsap.registerPlugin(ScrollTrigger);
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+if (!location.hash) scrollTo(0, 0);
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- hero: cues timed to the real footage (hero.mp4, 19 s loop) ----------
+   0–5.5 webshop on a laptop · 5.5–11 frozen frame, real verdict · 11–13.2 email · 13.2–19 frozen frame
+   Boxes are the server's box_2d ([ymin,xmin,ymax,xmax], 0–1000) for these exact frames. */
+const SHOP = {boxes:[{b:[147,140,168,545],l:"Lookalike domain"},{b:[842,563,856,610],l:"Price far below normal"}]};
+const MAIL = {boxes:[{b:[383,310,452,741],l:"Unrealistic offer or returns",c:"amber"},{b:[385,313,414,472],l:"Claims to be an authority or brand",c:"amber"}]};
+const CUES = [
+  {t:0.2, text:"You're shopping for sunglasses on a laptop."},
+  {t:2.6, text:"Second Look reads the page on your phone. The price and the address look off."},
+  {t:5.0, text:"Checking what you see…", scan:true},
+  {t:5.7, text:'<span class="voice">“Hold on. This looks like a scam. This address is ray-ban<b>d</b>.com, not the official website.”</span>',
+   boxes:SHOP.boxes, signs:[["Lookalike address · ray-band.com ≠ ray-ban.com"],["Price far below normal · €9.90 Ray-Bans"]], verdict:["LIKELY SCAM",""],
+   hud:["LIKELY SCAM","Don't pay or reply.","Lookalike domain · Price far below normal","#FF453A"]},
+  {t:11.0, text:"Later, an email: a weekly paid job “from UNICEF”.", clear:true},
+  {t:13.0, text:"Checking what you see…", scan:true},
+  {t:13.6, text:'<span class="voice">“Hmm, something\'s off here. Easy weekly income is classic bait.”</span>',
+   boxes:MAIL.boxes, signs:[["Unrealistic offer · $500 a week","amber"],["Uses a brand name · UNICEF","amber"]], verdict:["BE CAREFUL","amber"],
+   hud:["BE CAREFUL","Check before you pay.","Unrealistic offer · Uses a brand name","#FF9F0A"]},
+];
+const vid = document.getElementById('vid'), lineText = document.getElementById('lineText');
+const boxesEl = document.getElementById('boxes'), signsEl = document.getElementById('signs'), hud = document.getElementById('hud');
+let typer, cueIdx = -1;
+function type(html){
+  if (typer) typer.kill();
+  const tmp = document.createElement('div'); tmp.innerHTML = html; const plain = tmp.textContent;
+  const o = {n:0};
+  typer = gsap.to(o, {n:plain.length, duration:Math.min(2.2, plain.length*0.028), ease:'none', onUpdate(){
+    const k = Math.round(o.n); lineText.innerHTML = k >= plain.length ? html : plain.slice(0,k).replace(/</g,'&lt;');
+  }});
+}
+function clearMarks(){
+  gsap.to([...boxesEl.children, ...signsEl.children], {opacity:0, y:6, duration:.25, onComplete(){boxesEl.innerHTML=''; signsEl.innerHTML='';}});
+  gsap.to(hud, {opacity:0, y:10, duration:.3});
+}
+function showMarks(c){
+  boxesEl.innerHTML = ''; signsEl.innerHTML = '';
+  c.boxes.forEach((x,i)=>{ const [y0,x0,y1,x1]=x.b, d=document.createElement('div');
+    d.className='bx'+(x.c?' '+x.c:'')+((y0<200||i>0)?' below':''); d.style.cssText=`left:${x0/10-0.6}%;top:${y0/10-1}%;width:${(x1-x0)/10+1.2}%;height:${(y1-y0)/10+2}%`;
+    d.innerHTML=`<b>${x.l}</b>`; boxesEl.appendChild(d); });
+  gsap.to(boxesEl.children, {opacity:1, scale:1, duration:.45, ease:'back.out(2)', stagger:.18});
+  c.signs.forEach(([t,cl])=>{ const s=document.createElement('span'); s.className='sign'+(cl?' '+cl:''); s.innerHTML=`<i></i>${t}`; signsEl.appendChild(s); });
+  const v=document.createElement('span'); v.className='sign verdict '+c.verdict[1]; v.textContent=c.verdict[0]; signsEl.appendChild(v);
+  gsap.to(signsEl.children, {opacity:1, y:0, duration:.5, ease:'power3.out', stagger:.14, delay:.3});
+  document.getElementById('hudWord').textContent=c.hud[0]; document.getElementById('hudAct').textContent=c.hud[1];
+  document.getElementById('hudWhy').textContent=c.hud[2]; hud.querySelector('svg').setAttribute('fill', c.hud[3]);
+  gsap.fromTo(hud, {opacity:0, y:12}, {opacity:1, y:0, duration:.6, ease:'power3.out', delay:.6});
+}
+function scan(){ gsap.fromTo('#scan', {top:'-22%', opacity:1}, {top:'100%', duration:.9, ease:'power1.inOut', onComplete(){gsap.set('#scan',{opacity:0})}}); }
+function onTime(){
+  const t = vid.currentTime; let i = -1;
+  CUES.forEach((c,k)=>{ if (t >= c.t) i = k; });
+  if (i === cueIdx) return;
+  if (i < cueIdx) clearMarks();           // looped
+  cueIdx = i; if (i < 0) return;
+  const c = CUES[i]; type(c.text);
+  if (c.clear) clearMarks();
+  if (c.scan) scan();
+  if (c.boxes) showMarks(c);
+}
+vid.addEventListener('timeupdate', onTime);
+
+// intro: darkness closes in, frame appears, then the footage plays
+const intro = gsap.timeline({defaults:{ease:'power3.out'}});
+intro.from('.stage', {scale:1.08, opacity:0, duration:1.4})
+     .from('.frame .fr, .frame .temple', {opacity:0, duration:1}, '-=.9')
+     .from('.transcript', {y:20, opacity:0, duration:.8}, '-=.6')
+     .from('.hero h1, .hero .sub, .note', {y:30, opacity:0, duration:.9, stagger:.12}, '-=.3')
+     .add(()=>{ vid.play().catch(()=>{}); });
+if (reduce) intro.progress(1);
+
+// hero parallax on scroll
+gsap.fromTo('.stage', {scale:1, y:0}, {scale:.92, y:-40, ease:'none', immediateRender:false, scrollTrigger:{trigger:'.hero', start:'top top', end:'bottom top', scrub:true}});
+gsap.fromTo('.transcript', {y:0, opacity:1}, {y:-60, opacity:0, ease:'none', immediateRender:false, scrollTrigger:{trigger:'.hero', start:'30% top', end:'bottom top', scrub:true}});
+ScrollTrigger.create({trigger:'.hero', start:'top top', end:'bottom top', onLeave:()=>vid.pause(), onEnterBack:()=>vid.play().catch(()=>{})});
+
+/* ---------- story: text reveals and counters ---------- */
+gsap.utils.toArray('.step').forEach(s=>{
+  gsap.from(s.children, {y:40, opacity:0, duration:.9, ease:'power3.out', stagger:.08, scrollTrigger:{trigger:s, start:'top 70%'}});
+});
+gsap.utils.toArray('[data-count]').forEach(el=>{
+  const end=parseFloat(el.dataset.count), dec=+(el.dataset.dec||0), pre=el.dataset.prefix||'', suf=el.dataset.suffix||'', o={v:0};
+  gsap.to(o,{v:end,duration:1.6,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 80%'},onUpdate(){el.textContent=pre+o.v.toFixed(dec)+suf;}});
+});
+gsap.from('.row', {opacity:0, x:-20, duration:.6, stagger:.07, ease:'power2.out', scrollTrigger:{trigger:'.table', start:'top 75%'}});
+gsap.from('.end img, .end h2, .end p', {y:40, opacity:0, duration:1, stagger:.12, ease:'power3.out', scrollTrigger:{trigger:'.end', start:'top 70%'}});
+
+/* ---------- the phone: same screens, colours and words as the iOS app ---------- */
+const MOODS = { // AuroraBackground.swift
+  calm:['#F6EEE6','#1F3BE0','#2CC3FF','#7C8CFF'], checking:['#EFEAF8','#4B2CE0','#2CC3FF','#B06CFF'],
+  listening:['#F1E9F7','#6A2CE0','#D06CFF','#3A6BFF'], scam:['#FBECE6','#E5231B','#FF7A3D','#FF3D7F'],
+  careful:['#FBF1E2','#F08A00','#FFC233','#FF6A3D'], okay:['#EAF6EF','#0FA86A','#37D6B0','#2CC3FF'] };
+const screen=document.getElementById('screen'), aura=document.getElementById('aura').children, phone=document.getElementById('phone');
+function mood(m){ const c=MOODS[m]; screen.style.background=c[0];
+  [...aura].forEach((b,i)=>b.style.background=`radial-gradient(circle, ${c[i+1]} 0%, ${c[i+1]}00 70%)`);
+  phone.style.boxShadow=`0 0 0 1.5px #2a2c33,0 40px 120px rgba(0,0,0,.6),0 0 160px ${c[1]}44`; }
+const H={word:document.getElementById('hWord'), para:document.getElementById('hPara'), quote:document.getElementById('hQuote')};
+const views={home:'v-home', alert:'v-alert', scan:'v-scan'};
+let quoteTl;
+function view(v){ Object.values(views).forEach(id=>{ const el=document.getElementById(id); const on=id===views[v];
+  gsap.to(el,{autoAlpha:on?1:0,y:on?0:10,duration:.5,ease:'power2.out'}); });
+  gsap.to('#bbar',{autoAlpha:v==='scan'?0:1,duration:.3}); }
+function setHome(word, para){ gsap.to([H.word,H.para],{opacity:0,duration:.18,onComplete(){H.word.textContent=word;H.para.textContent=para;gsap.to([H.word,H.para],{opacity:1,duration:.35});}}); }
+const toggle=document.getElementById('toggle'), plist=document.getElementById('plist').children;
+function setToggle(on){ toggle.classList.toggle('on',on); toggle.children[1].classList.toggle('sel',!on); toggle.children[2].classList.toggle('sel',on); }
+function card(kind){ const c=document.getElementById('card');
+  c.className='card'+(kind==='call'?'':''); document.getElementById('wave').style.display=kind==='voice'?'flex':'none';
+  if(kind==='call'){ cWord.textContent='LIKELY SCAM'; cAct.textContent="Don't pay or reply.";
+    cWhy.textContent='Real banks and authorities never ask for PINs, passwords or banking codes by message.';
+    cChips.innerHTML='<span>Asks for codes or passwords</span><span>“Safe account”</span>'; }
+  else { cWord.textContent='LIKELY SCAM'; cAct.textContent="Don't pay or reply.";
+    cWhy.textContent="Uses the name 'ray-ban.com' but ray-band.com is not its official website.";
+    cChips.innerHTML='<span>Lookalike domain</span><span>Price far below normal</span>'; }
+}
+const cWord=document.getElementById('cWord'),cAct=document.getElementById('cAct'),cWhy=document.getElementById('cWhy'),cChips=document.getElementById('cChips');
+let optTl;
+const STATES={
+  ready(){ mood('calm'); view('home'); setToggle(false); H.quote.style.display='none'; setHome('ready','Look at it and tap check, or press the capture button on your glasses.'); },
+  checking(){ mood('checking'); view('home'); setToggle(false); H.quote.style.display='none'; setHome('checking',"Reading what you're looking at."); },
+  call(){ mood('listening'); view('home'); setToggle(false); setHome('listening',"Listening to this call. I'll warn you about scam signs.");
+    H.quote.style.display='block'; const words='“Hello, this is Anna from your bank\'s security team. To stop the payment, read me the code we just sent… then we\'ll move your money to a safe account.”'.split(' ');
+    if(quoteTl) quoteTl.kill(); const o={n:0}; quoteTl=gsap.to(o,{n:words.length,duration:4,ease:'none',onUpdate(){H.quote.textContent=words.slice(0,Math.round(o.n)).join(' ');},
+      onComplete(){ mood('scam'); card('call'); view('alert'); }}); },
+  scan(){ mood('calm'); view('scan'); gsap.fromTo('#v-scan .rb',{opacity:0,scale:1.2},{opacity:1,scale:1,stagger:.25,delay:.5,duration:.4,ease:'back.out(2)'});
+    gsap.fromTo('#v-scan .card',{y:40,opacity:0},{y:0,opacity:1,delay:1.2,duration:.6,ease:'power3.out'}); },
+  alert(){ mood('scam'); card('shop'); view('alert'); gsap.fromTo('#card',{y:30,scale:.96},{y:0,scale:1,duration:.7,ease:'power3.out'}); },
+  listen(){ STATES.call(); },
+  options(){ mood('calm'); view('home'); H.quote.style.display='none'; setHome('ready','Look at it and tap check, or press the capture button on your glasses.');
+    if(optTl) optTl.kill();
+    optTl=gsap.timeline({repeat:-1,repeatDelay:.6})
+      .call(()=>plist[4].classList.remove('off'),null,.6).call(()=>plist[1].classList.add('off'),null,1.2)
+      .call(()=>{ setToggle(true); mood('checking'); H.word.textContent='watching'; H.para.textContent='I check what you look at every 15 seconds and only speak up if something looks wrong.'; },null,2)
+      .call(()=>{ setToggle(false); mood('calm'); H.word.textContent='ready'; H.para.textContent='Look at it and tap check, or press the capture button on your glasses.'; plist[1].classList.remove('off'); plist[4].classList.add('off'); },null,4.6); },
+  voice(){ mood('scam'); card('shop'); view('alert'); }
+};
+let current='';
+function go(s){ if(s===current) return; current=s; if(optTl && s!=='options'){optTl.kill(); optTl=null;} if(quoteTl && s!=='call' && s!=='listen'){quoteTl.kill();quoteTl=null;} STATES[s](); }
+const stepEls=[...document.querySelectorAll('.step')];
+function syncPhone(){ const y=innerHeight*0.55; for(const s of stepEls){ const r=s.getBoundingClientRect(); if(r.top<=y && r.bottom>y){ go(s.dataset.phone); return; } } }
+addEventListener('scroll', syncPhone, {passive:true}); addEventListener('resize', syncPhone);
+window.addEventListener('load',()=>ScrollTrigger.refresh());
+document.fonts && document.fonts.ready.then(()=>ScrollTrigger.refresh());
+go('ready'); syncPhone();
+</script>
+</body>
+</html>

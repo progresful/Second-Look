@@ -1,7 +1,12 @@
+# Landing page from /opt/secondlook/web; the API (and older demo pages) from the app server.
 server {
-    listen 80;
     server_name secondlook.pgf.lv;
     client_max_body_size 10m;
+    root /opt/secondlook/web;
+
+    location = / { try_files /index.html =404; add_header Cache-Control "no-cache"; }
+    location /media/ { expires 7d; add_header Cache-Control "public"; }
+
     location / {
         proxy_pass http://127.0.0.1:8770;
         proxy_set_header Host $host;
@@ -9,4 +14,18 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_read_timeout 60s;
     }
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/secondlook.pgf.lv/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/secondlook.pgf.lv/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+}
+server {
+    if ($host = secondlook.pgf.lv) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+    listen 80;
+    server_name secondlook.pgf.lv;
+    return 404; # managed by Certbot
 }
