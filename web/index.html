@@ -7,8 +7,19 @@
 <meta name="description" content="Look at a letter, text or webshop through your Meta AI glasses and hear in seconds if it shows scam signs, and why.">
 <link rel="icon" href="media/icon.png">
 <meta property="og:title" content="Second Look">
-<meta property="og:description" content="A second opinion before you pay. Scam signs, spotted where you look.">
-<meta property="og:image" content="media/hero-poster.jpg">
+<meta property="og:description" content="A second opinion before you pay. Scam signs, spotted where you look. Built for Meta AI glasses.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://secondlook.pgf.lv/">
+<meta property="og:site_name" content="Second Look">
+<meta property="og:image" content="https://secondlook.pgf.lv/media/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Second Look marks a look-alike web address and a too-low price on a fake Ray-Ban webshop: likely scam.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Second Look">
+<meta name="twitter:description" content="A second opinion before you pay. Scam signs, spotted where you look.">
+<meta name="twitter:image" content="https://secondlook.pgf.lv/media/og.png">
+<meta name="theme-color" content="#000000">
 <style>
 :root{
   --bg:#000; --ink:#f5f5f7; --dim:#86868b; --dim2:#a1a1a6; --line:rgba(255,255,255,.1);
@@ -104,7 +115,7 @@ nav ul a{text-decoration:none;transition:color .2s} nav ul a:hover{color:#fff}
 .step{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:10vh 0}
 .step h2{font-size:clamp(32px,3.4vw,52px);font-weight:600;letter-spacing:-.03em;line-height:1.04;margin:12px 0 20px}
 .step p{color:var(--dim2);font-size:clamp(17px,1.3vw,21px);line-height:1.47;letter-spacing:-.01em;max-width:560px}
-.stat{display:grid;grid-template-columns:auto 1fr;gap:10px 24px;align-items:center;margin-top:30px}
+.stat{display:grid;grid-template-columns:auto 1fr;gap:18px 26px;align-items:center;margin-top:30px}
 .stat .n{font-size:clamp(44px,4.6vw,72px);font-weight:600;letter-spacing:-.05em;line-height:1}
 .stat .l{font-size:17px;line-height:1.38;color:var(--ink);max-width:290px;letter-spacing:-.01em}
 .src{display:block;margin-top:22px;font-size:12px;color:var(--dim)}
@@ -204,7 +215,7 @@ footer .cols{display:grid;grid-template-columns:1fr 1fr;gap:40px}
 
 <nav>
   <a class="brand" href="#top"><img src="media/icon.png" alt="">Second Look</a>
-  <ul><li><a href="#problem">Problem</a></li><li><a href="#how">How it works</a></li><li><a href="#features">Features</a></li><li><a href="#why">Why us</a></li></ul>
+  <ul><li><a href="#problem">Problem</a></li><li><a href="#calls">Calls</a></li><li><a href="#how">How it works</a></li><li><a href="#features">Features</a></li><li><a href="#why">Why us</a></li></ul>
   <a class="navcta" href="#how">See how</a>
 </nav>
 
@@ -251,25 +262,19 @@ footer .cols{display:grid;grid-template-columns:1fr 1fr;gap:40px}
     <article class="step" id="problem" data-phone="ready">
       <span class="eyebrow">The problem</span>
       <h2>Scams are everywhere.</h2>
-      <div class="stat"><div class="n " data-count="57" data-suffix="%">57%</div><div class="l">of adults worldwide experienced a scam in the past 12 months</div>
-        <div class="n" data-count="23" data-suffix="%">23%</div><div class="l">lost money. Shopping scams hit 54% of victims.</div></div>
-      <span class="src">Global Anti-Scam Alliance &amp; Feedzai, <a href="https://www.gasa.org/post/global-scams-on-the-rise-over-half-of-adults-worldwide-report-scam-encounters" target="_blank" rel="noopener">Global State of Scams 2025</a> · 46,000 adults, 42 markets</span>
+      <div class="stat">
+        <div class="n" data-count="57" data-suffix="%">57%</div><div class="l">of adults worldwide met a scam in the past year. 23% lost money.</div>
+        <div class="n" data-count="4.2" data-prefix="€" data-suffix="B" data-dec="1">€4.2B</div><div class="l">payment fraud in Europe in 2024. People bore ~85% of credit-transfer losses.</div>
+        <div class="n" data-count="72.5" data-prefix="€" data-suffix="M" data-dec="1">€72.5M</div><div class="l">lost to digital fraud in Finland in 2025, up from €62.9M.</div>
+      </div>
+      <span class="src">Sources: <a href="https://www.gasa.org/post/global-scams-on-the-rise-over-half-of-adults-worldwide-report-scam-encounters" target="_blank" rel="noopener">GASA &amp; Feedzai 2025</a> · <a href="https://www.eba.europa.eu/publications-and-media/press-releases/joint-eba-ecb-report-payment-fraud-strong-authentication-remains-effective-fraudsters-are-adapting" target="_blank" rel="noopener">EBA &amp; ECB 2025</a> · <a href="https://www.finanssiala.fi/en/news/total-value-of-attempted-digital-fraud-climbed-to-148-million/" target="_blank" rel="noopener">Finance Finland 2026</a></span>
     </article>
 
-    <article class="step" data-phone="checking">
-      <span class="eyebrow">Europe</span>
-      <h2>People pay the price.</h2>
-      <div class="stat"><div class="n " data-count="4.2" data-prefix="€" data-suffix="B" data-dec="1">€4.2B</div><div class="l">payment fraud in the EEA in 2024, up from €3.5B</div>
-        <div class="n" data-count="85" data-prefix="~" data-suffix="%">~85%</div><div class="l">of credit-transfer fraud losses were borne by the users, mostly tricked into paying</div></div>
-      <span class="src">EBA &amp; ECB, <a href="https://www.eba.europa.eu/publications-and-media/press-releases/joint-eba-ecb-report-payment-fraud-strong-authentication-remains-effective-fraudsters-are-adapting" target="_blank" rel="noopener">joint report on payment fraud</a>, Dec 2025</span>
-    </article>
-
-    <article class="step" data-phone="call">
-      <span class="eyebrow">Finland</span>
-      <h2>It's close to home.</h2>
-      <div class="stat"><div class="n " data-count="72.5" data-prefix="€" data-suffix="M" data-dec="1">€72.5M</div><div class="l">lost to digital fraud in 2025, up from €62.9M</div>
-        <div class="n" data-count="148" data-prefix="€" data-suffix="M">€148M</div><div class="l">attempted. Phishing targeted almost 17,000 people.</div></div>
-      <span class="src">Finance Finland, bank data, <a href="https://www.finanssiala.fi/en/news/total-value-of-attempted-digital-fraud-climbed-to-148-million/" target="_blank" rel="noopener">Feb 2026</a></span>
+    <article class="step" id="calls" data-phone="listen">
+      <span class="eyebrow">Call check</span>
+      <h2>It listens to calls.</h2>
+      <p>“Safe account” scams took €38.4 million from Finns in 2025. Turn on call check when a call feels off: it shows a live caption and speaks up the moment someone asks for a code, a transfer or remote access.</p>
+      <span class="src">Finance Finland, bank data, Feb 2026</span>
     </article>
 
     <article class="step" id="how" data-phone="scan">
@@ -280,33 +285,20 @@ footer .cols{display:grid;grid-template-columns:1fr 1fr;gap:40px}
         <div><span>02</span><b>Only if it matters</b>one frame is checked with Gemini, in about two seconds.</div>
         <div><span>03</span><b>You hear why</b>in one plain sentence, with a card on the glasses display.</div>
       </div>
-      <p style="margin-top:24px">The message it reads gets a yellow frame. Each scam sign gets a red box: a look-alike address, a price far below normal, a request for codes.</p>
     </article>
 
     <article class="step" id="features" data-phone="alert">
       <span class="eyebrow">Clear answers</span>
       <h2>It tells you why.</h2>
-      <p>Every check ends in one of four answers: likely scam, be careful, looks okay, or not sure. Each comes with what to do, why, and the exact signs it noticed. It never says something is “safe”.</p>
-      <div class="chips"><span>24 kinds of scam signs</span><span>Prices that don't add up</span><span>Look-alike web addresses</span><span>Codes &amp; “safe accounts”</span></div>
-    </article>
-
-    <article class="step" data-phone="listen">
-      <span class="eyebrow">Call check</span>
-      <h2>It listens to calls.</h2>
-      <p>Turn it on for a call you're unsure about. It shows a live caption of what's said and speaks up the moment a caller asks for a code, a transfer to a “safe account” or remote access.</p>
+      <p>Likely scam, be careful, looks okay or not sure. Each answer says what to do, why, and which signs it noticed. It never calls anything “safe”.</p>
+      <div class="chips"><span>24 kinds of scam signs</span><span>Prices that don't add up</span><span>Look-alike addresses</span><span>Codes &amp; “safe accounts”</span></div>
     </article>
 
     <article class="step" data-phone="options">
-      <span class="eyebrow">You choose</span>
-      <h2>You choose what to guard.</h2>
-      <div class="chips"><span>Letters &amp; bills</span><span>Messages</span><span>Websites</span><span>Webshops</span><span>QR codes</span><span>Phone calls</span></div>
-      <p style="margin-top:24px">On request: tap check or press the glasses' capture button. Always on: it watches quietly and only speaks up if something looks wrong.</p>
-    </article>
-
-    <article class="step" data-phone="voice">
-      <span class="eyebrow">Warm voice · private by design</span>
-      <h2>A calm voice, offline.</h2>
-      <p>Answers are spoken in a warm voice (Kokoro-82M) generated on the iPhone itself, so it keeps talking offline. Card numbers, IBANs, personal IDs, phone numbers and emails are removed before any text leaves the phone. Nothing is stored.</p>
+      <span class="eyebrow">Your control</span>
+      <h2>Yours to control.</h2>
+      <p>Pick what to guard and whether it checks on request or always on. Answers come in a warm voice generated on the phone, so it works offline. Personal numbers are removed before anything leaves the phone, and nothing is stored.</p>
+      <div class="chips"><span>Letters &amp; bills</span><span>Messages</span><span>Webshops</span><span>QR codes</span><span>Phone calls</span><span>Works offline</span></div>
     </article>
   </div>
 
@@ -504,7 +496,7 @@ let current='';
 function go(s){ if(s===current) return; current=s; stopAll(); STATES[s](); }
 const stepEls=[...document.querySelectorAll('.step')];
 function syncPhone(){ const y=innerHeight*.55; for(const s of stepEls){ const r=s.getBoundingClientRect(); if(r.top<=y&&r.bottom>y){ go(s.dataset.phone); return; } } }
-addEventListener('scroll',syncPhone,{passive:true}); addEventListener('resize',syncPhone);
+addEventListener('scroll',syncPhone,{passive:true}); addEventListener('resize',syncPhone); setInterval(syncPhone,250);
 addEventListener('load',()=>ScrollTrigger.refresh());
 
 $('checkBtn').onclick=()=>{ stopAll(); STATES.checking(); later(1600,()=>STATES.alert(true)); };
