@@ -297,6 +297,7 @@ final class GlassesManager {
       background.append(Task { [weak self] in
         for await event in inputs.events {
           if case let .capture(pressType, source, _) = event, pressType == .shortPress, source == .captureButton {
+            NSLog("[SecondLook] capture button pressed")
             self?.onCapturePress?()
           }
         }
@@ -311,6 +312,8 @@ final class GlassesManager {
   // MARK: Live video: the glasses' camera stream feeds live scan (frames stay in memory only)
 
   private(set) var liveVideoOn = false
+  /// Called when the glasses end the video stream themselves (true = heat/power/battery).
+  @ObservationIgnored var onLiveVideoStopped: ((Bool) -> Void)?
   /// Last single photo from the glasses (for the debug mirror).
   @ObservationIgnored private(set) var lastGlassesPhoto: UIImage?
   /// Latest frame for the on-screen preview (updated a few times a second).
@@ -400,7 +403,8 @@ final class GlassesManager {
     // High resolution: we need to read small text on letters and screens.
     // Raw (uncompressed) frames: VideoFrame.makeUIImage() can't convert hvc1 (HEVC) frames,
     // and live scan needs images. Medium resolution keeps raw frames within the link budget.
-    let config = StreamConfiguration(videoCodec: .raw, resolution: .medium, frameRate: 15)
+    // 7 fps is plenty (live scan reads twice a second) and keeps the glasses cooler.
+    let config = StreamConfiguration(videoCodec: .raw, resolution: .medium, frameRate: 7)
     guard let cam = try session.addCamera(config: config) else { throw GlassesError.cameraUnavailable }
     camera = cam
     cam.stream.statePublisher.listen { [weak self] state in
@@ -414,9 +418,15 @@ final class GlassesManager {
       }
     }.store(in: streamTokens)
     cam.stream.errorPublisher.listen { [weak self] error in
+      NSLog("[SecondLook] glasses stream error: %@ (%@)", error.localizedDescription, String(describing: error))
       Task { @MainActor in
         guard let self else { return }
         self.lastError = error.localizedDescription
+        if self.liveVideoOn {
+          let hot = [StreamError.thermalHot, .peakPowerLimit, .batteryLow].contains(error)
+          self.stopLiveVideo()
+          self.onLiveVideoStopped?(hot)
+        }
         if let c = self.photoContinuation { self.photoContinuation = nil; c.resume(throwing: error) }
       }
     }.store(in: streamTokens)
@@ -465,8 +475,9 @@ final class GlassesManager {
   }
 
   func showOnDisplay(_ result: CheckResult) async {
-    guard let display, displayReady else { return }
-    do { try await display.send(DisplayCards.result(result)) } catch { lastError = "Display: \(error.localizedDescription)" }
+    guard let display, displayReady else { NSLog("[SecondLook] display: not available on these glasses or not ready"); return }
+    do { try await display.send(DisplayCards.result(result)); NSLog("[SecondLook] display: card sent (%@)", result.verdict.rawValue) }
+    catch { lastError = "Display: \(error.localizedDescription)"; NSLog("[SecondLook] display error: %@", error.localizedDescription) }
   }
 
   func showCheckingOnDisplay(_ message: String) async {

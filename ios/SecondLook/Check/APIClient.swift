@@ -49,8 +49,8 @@ struct APIClient {
 
   /// Debug mirror (test builds): latest frame + status for the team's viewer.
   @discardableResult
-  func postDebug(image: UIImage?, status: [String: String]) async -> Int {
-    var body: [String: Any] = ["status": status]
+  func postDebug(image: UIImage?, status: [String: String], log: [String] = []) async -> Int {
+    var body: [String: Any] = ["status": status, "log": log]
     if let jpeg = image?.downscaled(maxSide: 720).jpegData(compressionQuality: 0.6) { body["image_base64"] = jpeg.base64EncodedString() }
     var req = URLRequest(url: baseURL.appendingPathComponent("debug/frame"), timeoutInterval: 4)
     req.httpMethod = "POST"

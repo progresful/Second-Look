@@ -8,6 +8,9 @@ struct SecondLookApp: App {
   @State private var coordinator: CheckCoordinator
 
   init() {
+    #if DEBUG
+    DebugLog.shared.start()
+    #endif
     // A server override left over from a temporary demo tunnel goes stale when the tunnel
     // stops; drop it so the app uses its built-in server (secondlook.pgf.lv).
     if let o = UserDefaults.standard.string(forKey: "apiBaseURL"), o.contains("trycloudflare.com") {
@@ -21,7 +24,6 @@ struct SecondLookApp: App {
       NSLog("[SecondLook] Wearables SDK configure failed: \(error)")
     }
     #if DEBUG
-    if configured { MockGlasses.enableIfRequested() }
     #endif
     if UserDefaults.standard.bool(forKey: "consentGiven"), !ProcessInfo.processInfo.arguments.contains(where: { $0.hasPrefix("--demo-") }) { Notifier.shared.setUp() }
     let glasses = GlassesManager(sdkConfigured: configured)

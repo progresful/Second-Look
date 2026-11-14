@@ -80,7 +80,7 @@ def analyze_image(body: ImageIn):
 # ---------- debug mirror (team only) ----------
 # The app (test builds, opt-in toggle) posts its latest camera frame + status about once a
 # second. Only the newest one is kept, in memory. Reading it needs the app token too.
-DEBUG = {"frame": None, "status": {}, "at": 0.0}
+DEBUG = {"frame": None, "status": {}, "log": [], "at": 0.0}
 
 
 def _need_token(request: Request):
@@ -91,6 +91,7 @@ def _need_token(request: Request):
 class DebugIn(BaseModel):
     image_base64: str = Field("", max_length=3_000_000)
     status: dict = Field(default_factory=dict)
+    log: list = Field(default_factory=list, max_length=300)
 
 
 @app.post("/debug/frame")
@@ -99,6 +100,7 @@ def debug_post(body: DebugIn, request: Request):
     if body.image_base64:
         DEBUG["frame"] = base64.b64decode(body.image_base64)
     DEBUG["status"] = body.status
+    DEBUG["log"] = [str(x)[:400] for x in body.log][-200:]
     DEBUG["at"] = time.time()
     return {"ok": True}
 
@@ -114,7 +116,7 @@ def debug_frame(request: Request):
 @app.get("/debug/status")
 def debug_status(request: Request):
     _need_token(request)
-    return {"age_s": round(time.time() - DEBUG["at"], 1) if DEBUG["at"] else None, **DEBUG["status"]}
+    return {"age_s": round(time.time() - DEBUG["at"], 1) if DEBUG["at"] else None, **DEBUG["status"], "log": DEBUG["log"]}
 
 
 @app.get("/debug")

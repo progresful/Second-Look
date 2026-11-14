@@ -11,8 +11,6 @@ struct SettingsView: View {
   @AppStorage("debugMirror") private var debugMirror = false
   @AppStorage("consentGiven") private var consentGiven = true
   #if DEBUG
-  @State private var mockOn = MockGlasses.isOn
-  @State private var mockDisplay = MockGlasses.useDisplayModel
   #endif
 
   var body: some View {
@@ -80,14 +78,6 @@ struct SettingsView: View {
           Text("Restart the app after changing. On a real iPhone use your Mac's network address or the Hostinger URL.")
         }
 
-        #if DEBUG
-        Section {
-          Toggle("Use mock glasses", isOn: $mockOn).onChange(of: mockOn) { _, v in MockGlasses.isOn = v }
-          Toggle("Mock is Ray-Ban Display", isOn: $mockDisplay).onChange(of: mockDisplay) { _, v in MockGlasses.useDisplayModel = v }
-        } header: { Text("Developer") } footer: {
-          Text("Mock glasses use the bundled webshop photo as the camera. Restart the app to apply.")
-        }
-        #endif
 
         Section("Privacy") {
           Text("Photos are sent to our server and Google Gemini to be read, and are not stored by us. Call audio never leaves your devices. Meta's toolkit analytics are turned off.")

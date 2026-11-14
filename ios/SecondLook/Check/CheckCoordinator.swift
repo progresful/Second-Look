@@ -76,6 +76,14 @@ final class CheckCoordinator {
     self.alwaysOn = UserDefaults.standard.bool(forKey: "alwaysOn")
 
     glasses.onCapturePress = { [weak self] in Task { await self?.checkWithGlasses() } }
+    glasses.onLiveVideoStopped = { [weak self] hot in
+      guard let self else { return }
+      let pause: TimeInterval = hot ? 120 : 20
+      self.liveCooldownUntil = Date().addingTimeInterval(pause)
+      NSLog("[SecondLook] glasses ended the video%@; pausing live scan for %.0f s", hot ? " (heat/power)" : "", pause)
+      self.stopLiveScan()
+      if hot { self.speaker.say("The glasses are getting warm. I'll pause checking for two minutes.") }
+    }
     glasses.onTranscript = { [weak self] text, isFinal in self?.heard(text, isFinal: isFinal) }
     phoneListener.onTranscript = { [weak self] text, isFinal in self?.heard(text, isFinal: isFinal) }
     if alwaysOn { syncAlwaysOn() }
@@ -150,6 +158,8 @@ final class CheckCoordinator {
   private(set) var liveFrameSize: CGSize = .zero
   let liveCamera = LiveCamera()
   @ObservationIgnored private var liveFromAlwaysOn = false
+  @ObservationIgnored private var lastQuietLog = Date.distantPast
+  @ObservationIgnored private var liveCooldownUntil = Date.distantPast
   /// Live scan is reading the glasses' camera (true) or the phone camera (false).
   private(set) var usingGlassesVideo = false
   @ObservationIgnored private var liveTask: Task<Void, Never>?
@@ -215,15 +225,28 @@ final class CheckCoordinator {
     liveBoxes = boxes(for: lines)
 
     let text = lines.map(\.text).joined(separator: "\n")
-    guard !liveCheckInFlight, Date().timeIntervalSince(lastLiveCheck) >= Self.liveInterval,
-          OfflineChecker.worthChecking(text), !Self.similar(text, lastLiveText) else { return }
+    guard !liveCheckInFlight, Date().timeIntervalSince(lastLiveCheck) >= Self.liveInterval else { return }
+    let worth = OfflineChecker.worthChecking(text), same = Self.similar(text, lastLiveText)
+    if !worth || same {
+      if Date().timeIntervalSince(lastQuietLog) > 8 {
+        lastQuietLog = Date()
+        NSLog("[SecondLook] live: read %d lines (%d chars) from %@, %@", lines.count, text.count,
+              usingGlassesVideo ? "glasses" : "phone", !worth ? "nothing worth checking" : "same as last check")
+      }
+      return
+    }
+    NSLog("[SecondLook] live: worth checking (%d chars, e.g. \"%@\"), sending frame", text.count,
+          String(Redactor.redact(text).replacingOccurrences(of: "\n", with: " ").prefix(70)))
     lastLiveText = text
     lastLiveCheck = Date()
     liveCheckInFlight = true
     liveStatus = .checking
     let checkedLines = lines
     Task {
+      let t0 = Date()
       let r = await check(image: frame, live: true, phoneText: Redactor.redact(text))
+      NSLog("[SecondLook] live: result %@ in %.1f s (%@)%@", r.verdict.rawValue, Date().timeIntervalSince(t0),
+            r.engine, r.warnings.isEmpty ? "" : ": " + r.warnings.prefix(3).map(\.label).joined(separator: ", "))
       liveCheckInFlight = false
       guard liveStatus != .off else { return }
       liveStatus = .watching
@@ -337,7 +360,7 @@ final class CheckCoordinator {
           "always on": self.alwaysOn ? "on" : "off",
           "last verdict": self.result.map { "\($0.verdict.rawValue): \($0.why)" } ?? "none",
         ]
-        let code = await self.api.postDebug(image: frame, status: status)
+        let code = await self.api.postDebug(image: frame, status: status, log: DebugLog.shared.recent())
         sent += 1
         if sent <= 3 || code != 200 { NSLog("[SecondLook] debug mirror post %d: HTTP %d, frame %@", sent, code, frame == nil ? "none" : "yes") }
         try? await Task.sleep(for: .milliseconds(900))
@@ -369,7 +392,7 @@ final class CheckCoordinator {
     alwaysOnTask = Task { [weak self] in
       while !Task.isCancelled {
         guard let self else { return }
-        if self.glasses.isConnected, self.liveStatus == .off {
+        if self.glasses.isConnected, self.liveStatus == .off, Date() >= self.liveCooldownUntil {
           await self.startLiveScan()
           self.liveFromAlwaysOn = self.usingGlassesVideo
           if !self.usingGlassesVideo { self.stopLiveScan() }
@@ -469,6 +492,7 @@ final class CheckCoordinator {
   /// quiet = background checks (always on, calls): only warnings are announced.
   private func deliver(_ r: CheckResult, quiet: Bool) {
     let warning = r.verdict == .scam || r.verdict == .suspicious
+    NSLog("[SecondLook] answer: %@%@ — %@", r.verdict.rawValue, quiet ? " (background)" : "", r.why)
     if quiet && !warning {
       if phase != .done { phase = .idle }
       return
