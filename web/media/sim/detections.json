@@ -45,40 +45,40 @@
   "boxes": [
    {
     "b": [
-     465,
-     444,
-     477,
-     563
+     310,
+     378,
+     331,
+     644
     ],
     "l": "False urgency",
     "e": "URGENT: Your account has been restricted - Action Required"
    },
    {
     "b": [
-     550,
-     499,
-     566,
-     535
+     523,
+     490,
+     563,
+     596
     ],
     "l": "Pushes you to a link",
     "e": "Verify My Account"
    },
    {
     "b": [
-     570,
-     443,
-     580,
-     588
+     583,
+     376,
+     619,
+     712
     ],
     "l": "Threat or fear appeal",
     "e": "If you do not complete this verification within 24 hours, your account may be permanently suspended."
    },
    {
     "b": [
-     531,
-     443,
-     545,
-     584
+     472,
+     377,
+     508,
+     712
     ],
     "l": "Asks for codes or passwords",
     "e": "To restore your account and verify your identity, you must immediately click the link below and update your details."
@@ -171,5 +171,42 @@
    "Lookalike domain",
    "Price far below normal"
   ]
+ },
+ "letter": {
+  "verdict": "suspicious",
+  "reason": "This notice claiming to be from the Effingham County Sheriff's Office appears to be a fake press release or prank asking drivers to pay erroneously issued tickets.",
+  "boxes": [
+   {
+    "b": [
+     221,
+     321,
+     287,
+     495
+    ],
+    "l": "Claims to be an authority or brand",
+    "e": "Effingham County Sheriff"
+   },
+   {
+    "b": [
+     534,
+     321,
+     558,
+     658
+    ],
+    "l": "Asks you to send money",
+    "e": "urging all drivers who received a school zone speed camera ticket in the past month to just pay them immediately"
+   }
+  ],
+  "signs": [
+   "False urgency",
+   "Claims to be an authority or brand",
+   "Asks you to send money"
+  ]
+ },
+ "qr": {
+  "verdict": "not_sure",
+  "reason": "This screen shows only a QR code without any visible text or context, so it cannot be identified as a scam.",
+  "boxes": [],
+  "signs": []
  }
 }

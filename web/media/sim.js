@@ -11,13 +11,14 @@
         word = $('.sim-word'), para = $('.sim-para'), card = $('.sim-card'), screen = $('.sim-screen');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  const V = '?v=9';                   // bump when photos, detections or voice clips change (they are cached for a week)
   const SCENES = {
     messages: { label: 'messages', img: 'media/sim/sms.jpg', key: 'sms', short: 'Fake parcel text. Don’t open the link.' },
     emails:   { label: 'emails', img: 'media/sim/gmail.jpg', key: 'gmail', short: 'Fake security email. Don’t verify through the link.' },
     websites: { label: 'websites', img: 'media/sim/bank.jpg', key: 'bank', short: 'Fake bank alert. The link isn’t your bank.' },
     webshops: { label: 'webshops', img: 'media/sim/shop.jpg', key: 'shop', short: 'Fake Ray-Ban shop: ray-band.com, €9.90.' },
-    letters:  { label: 'letters & bills', img: null, soon: true },
-    qr:       { label: 'qr codes', img: null, soon: true },
+    letters:  { label: 'letters & bills', img: 'media/sim/letter.jpg', key: 'letter', short: 'A notice telling you to pay at once. Check with the office first.' },
+    qr:       { label: 'qr codes', img: 'media/sim/qr.jpg', key: 'qr', short: 'A QR code alone can’t be judged. Don’t pay yet.' },
     calls:    { label: 'phone calls', call: true },
   };
   const ORDER = ['messages', 'emails', 'websites', 'webshops', 'letters', 'qr', 'calls'];
@@ -79,8 +80,22 @@
     word.textContent = state; para.textContent = text;
     screen.dataset.mood = verdict === 'scam' ? 'scam' : verdict === 'suspicious' ? 'careful' : state === 'listening' ? 'listening' : state === 'checking' ? 'checking' : 'calm';
   }
+  // The spoken alarm: one recorded line per scene, played when the alert appears.
+  // Browsers keep audio silent until the visitor has clicked, tapped or pressed a key once. If the
+  // alert fires before that, the line waits and plays on the first such action while the alert is up.
+  let voice = null, waiting = null;
+  const clips = {};
+  function hush() { waiting = null; if (voice) { voice.pause(); voice = null; } }
+  function say(k) {
+    hush(); if (!k) return;
+    voice = clips[k] || (clips[k] = new Audio('media/sim/voice/' + k + '.mp3' + V)); voice.currentTime = 0;
+    voice.play().catch(() => { waiting = k; if (!line.textContent.includes('sound')) line.textContent += '  ·  Tap anywhere for sound'; });
+  }
+  ['pointerdown', 'keydown', 'touchend'].forEach(ev => addEventListener(ev, () => {
+    if (waiting && screen.classList.contains('alerting')) { const k = waiting; later(0, () => say(k)); }
+  }, { passive: true }));
   function resetView() {
-    clearTimers(); if (tl) tl.kill();
+    hush(); clearTimers(); if (tl) tl.kill();
     gsap.killTweensOf([cam, hud, card, line, scan]);
     screen.classList.remove('alerting'); boxes.innerHTML = ''; gsap.set(hud, { opacity: 0, y: 10 }); gsap.set(card, { opacity: 0, y: 14, display: 'none' });
     line.textContent = ''; chip.textContent = ''; chip.className = 'sim-status';
@@ -108,7 +123,7 @@
       if (alwaysOn) later(reduce ? 0 : 2300, detect);
       else { checkBtn.classList.add('pulse'); line.textContent = 'Tap check, or press the capture button.'; }
     };
-    img.src = sc.img;
+    img.src = sc.img + V;
   }
   function detect() {
     const sc = SCENES[current], det = DET[sc.key]; if (!det) return;
@@ -133,26 +148,33 @@
         boxes.appendChild(d);
       });
       gsap.fromTo(boxes.children, { opacity: 0 }, { opacity: 1, duration: .8, stagger: .2, ease: 'power2.out' });
-      const word2 = det.verdict === 'scam' ? 'LIKELY SCAM' : det.verdict === 'suspicious' ? 'BE CAREFUL' : 'NO SCAM SIGNS';
-      showHud(word2, det.verdict === 'scam' ? "Don't pay or reply." : 'Check before you pay.', det.signs.slice(0, 2).join(' · '), det.verdict);
+      const word2 = det.verdict === 'scam' ? 'LIKELY SCAM' : det.verdict === 'suspicious' ? 'BE CAREFUL' : det.verdict === 'not_sure' ? 'NOT SURE' : 'NO SCAM SIGNS';
+      const act = det.verdict === 'scam' ? "Don't pay or reply." : det.verdict === 'not_sure' ? "Don't pay yet." : 'Check before you pay.';
+      showHud(word2, act, det.signs.slice(0, 2).join(' · ') || 'Nothing to read around the code', det.verdict);
       chip.textContent = word2.toLowerCase(); chip.className = 'sim-status ' + det.verdict;
       typeLine(sc.short);
       setApp(word2.toLowerCase(), sc.short, det.verdict);
-      showCard(word2, det.verdict === 'scam' ? "Don't pay or reply." : 'Check before you pay.', det.reason, det.signs.slice(0, 3), det.verdict);
+      showCard(word2, act, sc.short, det.signs.length ? det.signs.slice(0, 3) : ['Call the official number'], det.verdict);
     });
   }
   function showHud(w, a, s, verdict) {
-    hud.querySelector('.h span').textContent = w; hud.querySelector('.a').textContent = a; hud.querySelector('.w').textContent = s;
-    hud.querySelector('svg').setAttribute('fill', verdict === 'suspicious' ? '#FF9F0A' : '#FF453A');
+    hud.className = 'sim-hud ' + verdict; hud.querySelector('.h span').textContent = w; hud.querySelector('.a').textContent = a; hud.querySelector('.w').textContent = s;
+    hud.querySelector('svg').setAttribute('fill', verdict === 'suspicious' ? '#FF9F0A' : verdict === 'not_sure' ? '#9aa0ad' : '#FF453A');
     gsap.to(hud, { opacity: 1, y: 0, duration: .6, delay: .5, ease: 'power3.out' });
   }
   function showCard(w, a, why, signs, verdict) {
-    card.className = 'card sim-card' + (verdict === 'suspicious' ? ' amber' : '');
-    card.querySelector('.ch span').textContent = w; card.querySelector('.act').textContent = a;
+    card.className = 'card sim-card' + (verdict === 'suspicious' ? ' amber' : verdict === 'not_sure' ? ' grey' : '');
+    card.querySelector('.ch span').textContent = w; card.querySelector('.ch b').textContent = verdict === 'not_sure' ? '?' : '!'; card.querySelector('.act').textContent = a;
     card.querySelector('.cwhy').textContent = why;
-    card.querySelector('.cps').innerHTML = signs.map(x => `<span>${x}</span>`).join('');
+    card.querySelector('.cps').innerHTML = signs.slice(0, 2).map(x => `<span>${x}</span>`).join('');
+    later(600, () => say(current));
     screen.classList.add('alerting'); gsap.set(card, { display: 'block' }); gsap.to(card, { opacity: 1, y: 0, duration: .6, delay: .7, ease: 'power3.out' });
   }
+  // Close the alert: the app goes back to waiting, the marks in the glasses view stay.
+  card.querySelector('.sim-x').addEventListener('click', () => {
+    hush(); gsap.killTweensOf(card); gsap.set(card, { opacity: 0, y: 14, display: 'none' }); screen.classList.remove('alerting');
+    setApp(alwaysOn ? 'watching' : 'ready', alwaysOn ? 'I check what you look at and only speak up if something looks wrong.' : 'Look at it and tap check, or press the capture button on your glasses.');
+  });
   function typeLine(text) {
     const o = { n: 0 }; gsap.to(o, { n: text.length, duration: Math.min(2.4, text.length * .025), ease: 'none', delay: .3,
       onUpdate: () => { line.textContent = text.slice(0, Math.round(o.n)); } });
@@ -186,9 +208,19 @@
     }));
   }
 
+  // used by the glasses intro: show a scene's still without running it, then start it
+  function prime(k) {
+    const sc = SCENES[k]; if (!sc || !sc.img) return; current = k;
+    chips.querySelectorAll('.sim-chip').forEach(b => b.classList.toggle('sel', b.dataset.k === k));
+    img.onload = () => { fit(); gsap.set(cam, { scale: 1, x: 0, y: 0, opacity: 1 }); };
+    img.src = sc.img + V; setApp('watching', 'I check what you look at and only speak up if something looks wrong.');
+  }
+  window.SLSim = { prime, start: k => select(k, false) };
+
   addEventListener('resize', () => { if (current && !SCENES[current].call && img.naturalWidth) { fit(); } });
-  fetch('media/sim/detections.json').then(r => r.json()).then(d => { DET = d; }).finally(() => {
+  fetch('media/sim/detections.json' + V).then(r => r.json()).then(d => { DET = d; }).finally(() => {
     // start when the section comes into view
+    if (document.documentElement.classList.contains('staged')) return;   // the glasses intro starts it
     let started = false;
     const start = () => { if (started) return; started = true; if (!current) select('messages', false); };
     const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); start(); } }, { threshold: .15 });

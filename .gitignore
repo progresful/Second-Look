@@ -17,3 +17,10 @@ DerivedData/
 # Large raw recordings (keep the short drafts)
 presentation/video/raw-*.mp4
 presentation/video/.recpid
+
+# Superseded video cuts and old 3D experiments (kept locally only)
+presentation/video/second-look-v3.mp4
+presentation/video/second-look-v4.mp4
+web/3d/glasses_dive2.py
+web/3d/glasses_outline.json
+web/media/sim/voice/demo/

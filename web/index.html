@@ -11,14 +11,14 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://secondlook.pgf.lv/">
 <meta property="og:site_name" content="Second Look">
-<meta property="og:image" content="https://secondlook.pgf.lv/media/og.png">
+<meta property="og:image" content="https://secondlook.pgf.lv/media/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Second Look marks a look-alike web address and a too-low price on a fake Ray-Ban webshop: likely scam.">
+<meta property="og:image:alt" content="For people too smart to get scammed. So, everyone. Second Look, built for Meta AI glasses.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Second Look">
 <meta name="twitter:description" content="A second opinion before you pay. Scam signs, spotted where you look.">
-<meta name="twitter:image" content="https://secondlook.pgf.lv/media/og.png">
+<meta name="twitter:image" content="https://secondlook.pgf.lv/media/og.jpg">
 <meta name="theme-color" content="#000000">
 <style>
 :root{
@@ -165,6 +165,19 @@ nav ul{justify-self:start} .navcta{justify-self:end;font-size:12px;font-weight:5
 .toggle .knob{position:absolute;top:.2em;bottom:.2em;left:.2em;width:50%;border-radius:99px;background:#fff;transition:transform .5s cubic-bezier(.7,0,.2,1)}
 .toggle.on .knob{transform:translateX(96%)}
 .toggle span.sel{color:#111}
+#v-home{top:13.5%;bottom:14.5%;display:flex;flex-direction:column}
+#v-home .word{font-size:3.7em}
+#v-home .para{font-size:1.16em}
+#v-home .plabel{font-size:.8em;margin-top:1.4em}
+#v-home .plist{flex:1;display:flex;flex-direction:column;justify-content:space-evenly;margin:.3em 0 .5em}
+#v-home .plist div{font-size:2em;width:100%;padding:.16em 0;border-bottom:1px solid rgba(255,255,255,.2)}
+#v-home .plist div:last-child{border-bottom:0}
+#v-home .toggle{display:flex;width:100%;margin-top:0;font-size:1.08em}
+#v-home .toggle span{flex:1;text-align:center;padding:.75em 0}
+#v-home .toggle .knob{width:calc(50% - .2em)}
+#v-home .toggle.on .knob{transform:translateX(100%)}
+.bottombar .cbtn{width:3.6em;height:3.6em;font-size:1.05em}
+.bottombar .check{font-size:1.3em;padding:.6em .6em .6em 1.3em}
 .bottombar{position:absolute;left:7%;right:7%;bottom:4.5%;display:flex;align-items:center;gap:3%}
 .cbtn{width:2.9em;height:2.9em;border-radius:50%;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.35);display:grid;place-items:center;font-weight:700;cursor:pointer;transition:transform .15s}
 .check{display:flex;align-items:center;gap:.6em;background:#fff;color:#111;border-radius:99px;padding:.55em .55em .55em 1.1em;font-weight:500;font-size:1.05em;cursor:pointer;transition:transform .15s}
@@ -182,10 +195,10 @@ nav ul{justify-self:start} .navcta{justify-self:end;font-size:12px;font-weight:5
 .card .btns{display:flex;justify-content:space-between;margin-top:1em;font-size:.9em;font-weight:600}
 .card .btns span{padding:.65em 1em;border-radius:99px;background:rgba(255,255,255,.2);cursor:pointer;transition:transform .15s}
 .card .btns span.done{background:#fff;color:#111;padding:.65em 1.4em}
-.cam{position:absolute;inset:0;background:#000 url(media/hero-poster.jpg) 32% 50%/auto 100% no-repeat;filter:brightness(.8) contrast(1.1)}
+.cam{position:absolute;inset:0;background:#000 url(media/hero-poster.jpg) 29.8% 31%/auto 58% no-repeat;filter:brightness(.8) contrast(1.1)}
 .cam .chip{position:absolute;top:6.5%;left:6%;display:flex;align-items:center;gap:.5em;padding:.55em .9em;border-radius:99px;background:rgba(30,30,30,.55);backdrop-filter:blur(8px);font-size:.85em;font-weight:600}
 .cam .chip i{width:.55em;height:.55em;border-radius:50%;background:var(--green)}
-.cam .region{position:absolute;left:4%;right:4%;top:20%;bottom:30%;border:2px dashed var(--yel);border-radius:14px}
+.cam .region{position:absolute;left:-2%;right:-2%;top:13%;bottom:29%;border:2px dashed var(--yel);border-radius:14px}
 .cam .rb{position:absolute;border:2.5px solid var(--red);border-radius:6px;background:rgba(255,69,58,.15)}
 .cam .rb b{position:absolute;left:-2px;bottom:calc(100% + 4px);white-space:nowrap;background:var(--red);font-size:.7em;padding:.2em .5em;border-radius:5px}
 .cam .card{position:absolute;left:4%;right:4%;bottom:4%;background:rgba(219,38,38,.92);padding:1em}
@@ -224,7 +237,7 @@ footer .cols{display:grid;grid-template-columns:1fr 1fr;gap:40px}
 .sim-look,.sim-head{position:absolute;inset:-4%;}
 .sim-cam{position:absolute;will-change:transform}
 .sim-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.86) contrast(1.06)}
-.sim-boxes{position:absolute;inset:0}
+.sim-boxes{position:absolute;inset:0;display:none}
 .sim-bx{position:absolute;border-radius:calc(14px * var(--inv,1));border:calc(1.5px * var(--inv,1)) solid rgba(255,110,100,.85);
   background:rgba(255,69,58,.06);
   box-shadow:0 0 calc(150px * var(--inv,1)) calc(30px * var(--inv,1)) rgba(255,69,58,.16),0 0 calc(24px * var(--inv,1)) calc(4px * var(--inv,1)) rgba(255,69,58,.32);
@@ -248,90 +261,163 @@ footer .cols{display:grid;grid-template-columns:1fr 1fr;gap:40px}
 .sim-hud .a{font-size:20px;font-weight:600;letter-spacing:-.02em;margin:6px 0 4px}
 .sim-hud .w{color:rgba(255,255,255,.7);font-size:12px}
 .sim-line{min-height:1.5em;margin:20px auto 0;max-width:700px;text-align:center;font-size:17px;font-weight:400;line-height:1.4;letter-spacing:-.01em;color:var(--dim2)}
-.sim-call{position:absolute;inset:0;display:none;background:radial-gradient(ellipse at 50% 40%,#2a2440,#0b0b10 70%)}
+.sim-call{position:absolute;inset:0;display:none;background:#0b0b10 url(media/sim/call.jpg?v=5) 50% 30%/cover no-repeat}
+.sim-call .sim-hand,.sim-call .sim-placeholder{display:none}
+.sim-call.alarm::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,rgba(255,60,50,0) 40%,rgba(255,40,30,.28));pointer-events:none}
 .sim-call.on{display:block}
 .sim-hand{position:absolute;left:50%;top:9%;transform:translateX(-50%);width:min(240px,34%);aspect-ratio:9/19;border-radius:34px;background:#111;box-shadow:0 0 0 2px #2c2c30,0 30px 80px rgba(0,0,0,.6);padding:10px}
 .sim-hand .scr{width:100%;height:100%;border-radius:26px;background:linear-gradient(180deg,#3a3f55,#1b1d26);display:flex;flex-direction:column;align-items:center;padding:22% 8% 0;color:#fff;text-align:center}
 .sim-hand .who{font-size:18px;font-weight:600}.sim-hand .num{font-size:12px;opacity:.7;margin-top:4px}.sim-timer{font-size:13px;opacity:.75;margin-top:10px}
 .sim-call.alarm .scr{background:linear-gradient(180deg,#5b1f22,#1b1d26)}
 .sim-captions{position:absolute;left:6%;bottom:9%;width:36%;display:flex;flex-direction:column;gap:8px}
-.sim-captions p{font-family:var(--serif);font-style:italic;font-size:15px;line-height:1.35;padding:9px 12px;border-radius:12px;background:rgba(255,255,255,.08);color:#eee}
+.sim-captions p{font-family:var(--serif);font-style:italic;font-size:17px;line-height:1.35;padding:10px 16px;border-radius:14px;background:rgba(12,12,18,.66);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.14);color:#fff;text-align:center}
 .sim-placeholder{position:absolute;right:3%;bottom:3%;font-size:11px;color:rgba(255,255,255,.4)}
-.sim-phone{width:100%;aspect-ratio:390/844;border-radius:46px;padding:10px;background:#0b0b0d;box-shadow:0 0 0 1.5px #2c2c30,0 40px 100px rgba(0,0,0,.6)}
-.sim-screen{position:relative;height:100%;border-radius:36px;overflow:hidden;padding:15% 8% 7%;display:flex;flex-direction:column;color:#fff;background:linear-gradient(160deg,#5b7cff,#2cc3ff 55%,#b06cff);transition:background 1s}
+.sim-phone{width:100%;aspect-ratio:390/844;border-radius:46px;padding:10px;background:#0b0b0d;box-shadow:0 0 0 1.5px #2c2c30,0 0 90px 6px rgba(96,128,255,.26),0 0 260px 60px rgba(110,96,255,.16),0 0 520px 140px rgba(60,170,255,.07)}
+.sim-screen{position:relative;height:100%;border-radius:calc(36 * var(--u));overflow:hidden;padding:15% 8% 7%;display:flex;flex-direction:column;color:#fff;background:linear-gradient(160deg,#5b7cff,#2cc3ff 55%,#b06cff);transition:background 1s}
 .sim-screen[data-mood=checking]{background:linear-gradient(160deg,#4b2ce0,#2cc3ff 55%,#b06cff)}
 .sim-screen[data-mood=listening]{background:linear-gradient(160deg,#6a2ce0,#d06cff 55%,#3a6bff)}
 .sim-screen[data-mood=scam]{background:linear-gradient(160deg,#e5231b,#ff7a3d 55%,#ff3d7f)}
 .sim-screen[data-mood=careful]{background:linear-gradient(160deg,#f08a00,#ffc233 55%,#ff6a3d)}
-.sim-screen .top{position:absolute;top:6.5%;left:8%;right:8%;display:flex;justify-content:space-between;align-items:center;font-size:11.5px;opacity:.92}
-.sim-screen .top .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#5BE38A;margin-right:6px;vertical-align:1px}
-.sim-screen .brandw{font-family:var(--serif);font-size:13px}
+.sim-screen .top{position:absolute;top:6.5%;left:8%;right:8%;display:flex;justify-content:space-between;align-items:center;font-size:calc(11.5 * var(--u));opacity:.92}
+.sim-screen .top .dot{display:inline-block;width:calc(6 * var(--u));height:calc(6 * var(--u));border-radius:50%;background:#5BE38A;margin-right:calc(6 * var(--u));vertical-align:1px}
+.sim-screen .brandw{font-family:var(--serif);font-size:calc(13 * var(--u))}
 .sim-state{margin-top:8%}
-.sim-word{font-family:var(--serif);font-size:38px;line-height:1;letter-spacing:-.01em}
-.sim-para{font-size:13.5px;line-height:1.4;opacity:.92;margin-top:10px;min-height:2.8em}
+.sim-word{font-family:var(--serif);font-size:calc(38 * var(--u));line-height:1;letter-spacing:-.01em}
+.sim-para{font-size:calc(13.5 * var(--u));line-height:1.4;opacity:.92;margin-top:calc(10 * var(--u));min-height:2.8em}
 .sim-guard{margin-top:auto}
-.sim-lbl{font-size:10px;letter-spacing:.16em;text-transform:uppercase;opacity:.72;margin:0 0 12px}
-.sim-chips{display:flex;flex-wrap:wrap;gap:8px 7px}
-.sim-chip{font:inherit;font-size:13.5px;font-weight:500;color:#fff;padding:8px 13px;border-radius:99px;border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.12);cursor:pointer;transition:background .2s,color .2s}
+.sim-lbl{font-size:calc(10 * var(--u));letter-spacing:.16em;text-transform:uppercase;opacity:.72;margin:0 0 calc(12 * var(--u))}
+.sim-chips{display:flex;flex-wrap:wrap;gap:calc(8 * var(--u)) calc(7 * var(--u))}
+.sim-chip{font:inherit;font-size:calc(13.5 * var(--u));font-weight:500;color:#fff;padding:calc(8 * var(--u)) calc(13 * var(--u));border-radius:calc(99 * var(--u));border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.12);cursor:pointer;transition:background .2s,color .2s}
 .sim-chip:hover{background:rgba(255,255,255,.25)} .sim-chip.sel{background:#fff;color:#111;border-color:#fff;font-weight:600}
-.sim-mode{align-self:flex-start;display:inline-flex;margin-top:18px;padding:3px;border-radius:99px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);font:inherit;font-size:12px;font-weight:600;color:#fff;cursor:pointer;position:relative}
-.sim-mode span{padding:6px 12px;border-radius:99px;transition:background .3s,color .3s} .sim-mode span.sel{background:#fff;color:#111}
-.sim-bar{margin-top:auto;padding-top:16px;display:flex;align-items:center;justify-content:space-between}
-.sim-gear{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:#fff;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);cursor:pointer}
-.sim-check{font:inherit;font-size:15px;font-weight:500;background:#fff;color:#111;border:0;border-radius:99px;padding:10px 20px;cursor:pointer;transition:opacity .3s,transform .3s}
-.sim-screen.auto .sim-check{opacity:0;pointer-events:none;transform:translateY(6px)}
+.sim-mode{align-self:flex-start;display:inline-flex;margin-top:calc(18 * var(--u));padding:calc(3 * var(--u));border-radius:calc(99 * var(--u));background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);font:inherit;font-size:calc(12 * var(--u));font-weight:600;color:#fff;cursor:pointer;position:relative}
+.sim-mode span{padding:calc(6 * var(--u)) calc(12 * var(--u));border-radius:calc(99 * var(--u));transition:background .3s,color .3s} .sim-mode span.sel{background:#fff;color:#111}
+.sim-bar{margin-top:auto;padding-top:calc(16 * var(--u));display:flex;align-items:center;justify-content:space-between}
+.sim-gear{width:calc(42 * var(--u));height:calc(42 * var(--u));border-radius:50%;display:grid;place-items:center;color:#fff;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);cursor:pointer}
+.sim-check{font:inherit;font-size:calc(15 * var(--u));font-weight:500;background:#fff;color:#111;border:0;border-radius:calc(99 * var(--u));padding:calc(10 * var(--u)) calc(20 * var(--u));cursor:pointer;transition:opacity .3s,transform .3s}
+.sim-screen.auto .sim-check{opacity:0;pointer-events:none;transform:translateY(calc(6 * var(--u)))}
 .sim-check.pulse{animation:simpulse 1.4s infinite}
 @keyframes simpulse{0%{box-shadow:0 0 0 0 rgba(255,255,255,.7)}70%{box-shadow:0 0 0 12px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
-.sim-screen.alerting .sim-guard,.sim-screen.alerting .sim-mode{display:none}
 .sim-screen.alerting .sim-para{display:none}
-.sim-card{display:none;margin-top:auto;font-size:12px;padding:1em;border-radius:1.2em;background:rgba(219,38,38,.6)}
+.sim-card{display:none;margin-top:auto;font-size:calc(12 * var(--u));padding:1em;border-radius:1.2em;background:rgba(219,38,38,.6)}
 .sim-card.amber{background:rgba(235,120,20,.6)}
-.sim-card .act{font-size:24px;margin:.35em 0}
-.sim-card .cwhy{font-size:13px;line-height:1.4}
-@media(max-width:900px){.sim{grid-template-columns:1fr}.sim-phone{max-width:340px;margin:0 auto}.sim-captions{width:60%;left:4%}.sim-hud{display:none}}
+.sim-card.grey{background:rgba(70,78,98,.72)}
+.sim-status.not_sure::before{background:#9aa0ad}
+.sim-card .act{font-size:calc(24 * var(--u));margin:.35em 0}
+.sim-card .cwhy{font-size:calc(13 * var(--u));line-height:1.4}
+@media(max-width:900px){.sim{grid-template-columns:1fr}.sim-phone{max-width:340px;margin:0 auto}.sim-captions{width:88%;left:6%;bottom:6%}.sim-captions p{font-size:13px;padding:7px 10px}.sim-hud{display:none}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* stage: live 3D glasses over the simulator, one pinned scroll scene */
+.stage{position:relative;background:#000;min-height:100svh}
+.stage .hero{display:none}
+html.staged .stage .hero{display:block;position:absolute;left:0;right:0;top:0;height:100svh;min-height:0;z-index:20;background:none;pointer-events:none}
+.herobg{position:absolute;inset:0;background:radial-gradient(ellipse 62% 52% at 50% 56%,#17181f 0%,#07070a 55%,#000 78%)}
+#gl{position:absolute;inset:0;width:100%;height:100%}
+.sweep{position:absolute;left:0;right:0;top:-2px;height:2px;background:#9fdcff;opacity:0;will-change:transform;
+  box-shadow:0 0 18px 4px rgba(90,180,255,.85),0 0 90px 26px rgba(60,130,255,.4),0 -60px 120px 30px rgba(60,130,255,.12)}
+.herohead{position:absolute;top:clamp(64px,8svh,100px);left:50%;transform:translateX(-50%);width:min(1200px,92vw);z-index:6;display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center}
+.herohead .herotitle{position:static;transform:none;width:auto;font-size:clamp(34px,4.7vw,78px);letter-spacing:-.04em;line-height:1.04}
+.heroicon{width:76px;height:76px;border-radius:18px;box-shadow:0 10px 40px rgba(60,110,255,.35)}
+.heroavail{font-size:17px;color:rgba(255,255,255,.62);letter-spacing:.01em;margin-top:-4px}
+@media(max-width:700px){.herohead{top:64px;gap:14px}.heroicon{width:64px;height:64px;border-radius:15px}}
+.sim-screen .top{white-space:nowrap;font-size:calc(10.5 * var(--u))}
+.heroclip{position:absolute;left:50%;bottom:110px;transform:translateX(-50%);width:min(340px,80vw);aspect-ratio:16/9;border-radius:16px;overflow:hidden;z-index:7;pointer-events:auto;box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.14)}
+.heroclip iframe{width:100%;height:100%;border:0;display:block}
+.vidbtn{position:fixed;top:18px;right:20px;z-index:80;display:inline-flex;align-items:center;gap:8px;padding:8px 15px 8px 10px;border-radius:99px;border:1px solid rgba(255,255,255,.14);background:rgba(18,18,24,.42);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:rgba(255,255,255,.72);font:500 13px/1 var(--sans);letter-spacing:.01em;cursor:pointer;transition:color .25s,background .25s,border-color .25s}
+.vidbtn:hover,.vidbtn:focus-visible{color:#fff;background:rgba(40,44,60,.6);border-color:rgba(255,255,255,.3)}
+.vidmodal{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.84);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);animation:vidin .35s ease-out}
+.vidmodal[hidden]{display:none}
+.vidframe{width:min(1120px,92vw);aspect-ratio:16/9;border-radius:18px;overflow:hidden;background:#000;box-shadow:0 0 0 1px rgba(255,255,255,.1),0 30px 120px rgba(47,107,255,.25)}
+.vidframe iframe{width:100%;height:100%;border:0;display:block}
+.vidx{position:absolute;top:18px;right:20px;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-size:24px;line-height:1;cursor:pointer}
+.vidx:hover{background:rgba(255,255,255,.2)}
+@keyframes vidin{from{opacity:0}}
+.beat{position:absolute;left:max(7vw,24px);bottom:17svh;z-index:6;font-size:clamp(22px,2.3vw,36px);font-weight:600;letter-spacing:-.025em;opacity:0}
+html.staged .try{padding:92px 0 5vh}
+html.staged .try .head{margin-bottom:26px}
+html.staged .try .head h2{font-size:clamp(34px,3.6vw,56px)}
+.sim-phone{container-type:inline-size}
+.sim-screen{--u:.357cqw}
+html.staged .try{width:96vw;padding:44px 0 3vh}
+html.staged .try .head{margin-bottom:18px;max-width:none}
+html.staged .try .head h2{font-size:clamp(28px,2.7vw,42px);margin-top:4px}
+html.staged .try .head p{font-size:16px;margin-top:8px}
+html.staged .sim-line{margin-top:14px}
+.sim-card{position:relative;margin-top:calc(12 * var(--u));padding:calc(11 * var(--u)) calc(13 * var(--u))}
+.sim-card .act{font-size:calc(19 * var(--u));margin:.3em 0 .15em}
+.sim-state{order:-2}.sim-card{order:-1}
+.sim-card .cps{display:flex;flex-wrap:wrap;gap:calc(5 * var(--u));margin-top:calc(7 * var(--u))}
+.sim-card .cps span{display:block;font-size:calc(11 * var(--u));line-height:1.25;padding:.32em .75em;border-radius:calc(12 * var(--u))}
+.sim-x{position:absolute;top:calc(6 * var(--u));right:calc(6 * var(--u));width:calc(26 * var(--u));height:calc(26 * var(--u));border-radius:50%;border:0;background:rgba(255,255,255,.22);color:#fff;font:inherit;font-size:calc(17 * var(--u));line-height:1;cursor:pointer}
+.sim-x:hover{background:rgba(255,255,255,.4)}
+/* One alert card everywhere (demo phone, simulator phone, glasses view): header, action, one short reason, signs. */
+.card,.cam .card,.sim-card,.sim-hud{background:linear-gradient(160deg,rgba(228,48,40,.95),rgba(170,22,30,.95));border:1px solid rgba(255,255,255,.28);box-shadow:0 12px 32px rgba(0,0,0,.35);border-radius:1.4em;color:#fff}
+.sim-card.amber,.sim-hud.suspicious{background:linear-gradient(160deg,rgba(242,134,22,.95),rgba(196,86,10,.95))}
+.sim-card.grey,.sim-hud.not_sure{background:linear-gradient(160deg,rgba(92,100,122,.95),rgba(58,64,82,.95))}
+.card .cwhy{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;opacity:.95}
+#card .cl,#card .next,#card .btns{display:none}
+.cam .card .act,#card .act{font-size:1.75em;margin:.35em 0 .3em}
+.cam .card .cwhy{font-size:.85em}
+.sim-card .cwhy{font-size:calc(11.5 * var(--u))}
+.sim-hud{padding:16px 18px;width:min(290px,32%)}
+.sim-hud .h{font-weight:800;letter-spacing:.1em;font-size:11px}
+.sim-hud .h svg{display:none}
+.sim-hud .h::before{content:"!";width:19px;height:19px;border-radius:50%;background:#fff;color:#dc2626;display:grid;place-items:center;font-size:11px;font-weight:800;letter-spacing:0}
+.sim-hud.suspicious .h::before{color:#d9730a}.sim-hud.not_sure .h::before{content:"?";color:#4b5263}
+.sim-hud .a{font-family:var(--serif);font-weight:400;font-size:23px;letter-spacing:0}
+.sim-hud .w{color:rgba(255,255,255,.92)}
+@media (min-width:900px){
+  html.staged .try{position:relative;width:100%;height:100svh;padding:0;overflow:hidden}
+  html.staged .try .head{position:absolute;left:0;right:0;top:26px;z-index:3;margin:0 auto;text-shadow:0 2px 24px rgba(0,0,0,.8)}
+  html.staged .try .head p{display:none}
+  html.staged .try .sim{display:block;width:auto;--ph:min(80svh,740px)}
+  html.staged .try .sim>div:first-child{position:absolute;inset:0}
+  html.staged .sim-lens{position:absolute;inset:0;aspect-ratio:auto;border-radius:0}
+  html.staged .sim-lens::after{content:"";position:absolute;inset:0 0 auto 0;height:26%;background:linear-gradient(180deg,rgba(0,0,0,.7),rgba(0,0,0,0));pointer-events:none}
+  html.staged .sim-status{top:calc(26px + 6.6vw + 8px)}
+  html.staged .sim-line{position:absolute;left:0;right:calc(var(--ph) * .462 + 6vw);bottom:4svh;z-index:3;margin:0 auto;font-size:19px;color:#fff;text-shadow:0 2px 18px rgba(0,0,0,.9)}
+  html.staged .sim-phone{position:absolute;right:max(4vw,28px);top:calc(50% - var(--ph) / 2 + 14px);height:var(--ph);width:auto;z-index:4}
+  html.staged .sim-captions{left:0;right:calc(var(--ph) * .462 + 6vw);margin:0 auto;width:min(560px,42%);bottom:33%}
+  html.staged .sim-hud{right:calc(var(--ph) * .462 + max(4vw,28px) + 5vw);bottom:15%;width:min(280px,24%)}
+}
+@media (max-width:899px){
+  html.staged .try{width:92vw;padding:22px 0 20px}
+  html.staged .try .head{margin-bottom:12px} html.staged .try .head p{display:none}
+  html.staged .try .head h2{font-size:26px}
+  .sim{gap:10px}
+  .sim-lens{border-radius:20px;aspect-ratio:16/10.5}
+  .sim-line{font-size:14px;min-height:2.8em;margin-top:8px}
+  .sim-phone{max-width:none;aspect-ratio:auto;padding:0;border-radius:24px;background:none;box-shadow:0 0 60px 4px rgba(96,128,255,.22)}
+  .sim-screen{--u:1px;height:auto;border-radius:24px;padding:16px 16px 14px}
+  .sim-screen .top,.sim-gear{display:none}
+  .sim-state{margin-top:0}
+  .sim-word{font-size:28px}.sim-para{margin-top:6px;min-height:2.8em;font-size:13px}
+  .sim-guard{margin-top:12px}.sim-lbl{margin-bottom:8px}
+  .sim-mode{margin-top:12px}
+  .sim-bar{position:absolute;right:16px;bottom:14px;margin:0;padding:0}
+}
+
 </style>
+<script>if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('staged')</script>
 </head>
 <body>
 
-<nav>
-  <ul><li><a href="#try">Try it</a></li><li><a href="#problem">Problem</a></li><li><a href="#calls">Calls</a></li><li><a href="#how">How it works</a></li><li><a href="#features">Features</a></li><li><a href="#why">Why us</a></li></ul>
-  <a class="brand" href="#top"><img src="media/icon.png" alt="">Second Look</a>
-  <a class="navcta" href="#how">See how</a>
-</nav>
 
-<header class="hero diving" id="top">
-  <div class="pov" id="pov">
-    <video id="vid" src="media/hero.mp4" poster="media/hero-poster.jpg" muted playsinline loop preload="auto" aria-label="First-person demo: a fake Ray-Ban webshop and a job-scam email"></video>
-    <div class="scanline" id="scan"></div>
-    <div class="boxes" id="boxes"></div>
+<button class="vidbtn" id="vidbtn" type="button"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 8.2v7.6L16 12z" fill="currentColor"/></svg>Watch the video</button>
+<div class="vidmodal" id="vidmodal" hidden role="dialog" aria-modal="true" aria-label="Second Look video"><button class="vidx" id="vidx" type="button" aria-label="Close video">&times;</button><div class="vidframe" id="vidframe"></div></div>
+<div class="stage" id="stage"><span id="top"></span>
+<header class="hero diving">
+  <div class="herobg"></div>
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <div class="sweep" id="sweep"></div>
+  <div class="herohead">
+    <img class="heroicon" src="media/icon.png" alt="Second Look">
+    <h1 class="herotitle">For people too smart to get scammed.<br>So, everyone.</h1>
+    <p class="heroavail">Available for iPhone and Android soon.</p>
   </div>
-  <div class="tint"></div>
-  <div class="lensblur"></div>
-  <div class="lens"></div>
-  <div class="sheen" id="sheen"></div>
-  <canvas class="dive" id="dive" aria-hidden="true"></canvas>
-
-  <div class="hud ov" id="hud" aria-hidden="true">
-    <div class="h"><svg viewBox="0 0 24 24" fill="#FF453A"><path d="M12 2 1 21h22L12 2zm1 15h-2v-2h2v2zm0-4h-2V9h2v4z"/></svg><span id="hudWord">LIKELY SCAM</span></div>
-    <div class="a" id="hudAct">Don't pay or reply.</div>
-    <div class="w" id="hudWhy">Lookalike domain · Price far below normal</div>
-    <small><i></i>Glasses display</small>
-  </div>
-
-  <div class="topfade ov"></div>
-  <h1 class="herotitle ov">A second opinion before you pay.</h1>
-  <div class="transcript ov" aria-live="polite">
-    <span class="live"><i></i>Live · what Second Look sees</span>
-    <p><span id="lineText"></span><span class="caret"></span></p>
-  </div>
-
-  <div class="botfade ov"></div>
-  <div class="herobottom ov">
-    <div class="signs" id="signs" aria-live="polite"></div>
-  </div>
-  <div class="scrollcue" aria-hidden="true"></div>
+  <p class="beat">It sees what you see.</p>
   <div class="divehint" aria-hidden="true">Scroll to put them on</div>
+  <div class="heroclip" id="heroclip" hidden></div>
 </header>
 
 <section class="try wrap" id="try">
@@ -358,11 +444,13 @@ footer .cols{display:grid;grid-template-columns:1fr 1fr;gap:40px}
       <div class="sim-state"><div class="sim-word">ready</div><div class="sim-para"></div></div>
       <div class="sim-guard"><div class="sim-lbl">Protect me from</div><div class="sim-chips" role="radiogroup" aria-label="What to guard"></div></div>
       <button class="sim-mode on" aria-label="Checking mode"><span>on request</span><span class="sel">always on</span></button>
-      <div class="card sim-card"><div class="ch"><b>!</b><span>LIKELY SCAM</span></div><div class="act"></div><div class="cwhy"></div><div class="cps"></div></div>
+      <div class="card sim-card" role="status"><button class="sim-x" aria-label="Dismiss">&times;</button><div class="ch"><b>!</b><span>LIKELY SCAM</span></div><div class="act"></div><div class="cwhy"></div><div class="cps"></div></div>
       <div class="sim-bar"><button class="sim-gear" aria-label="Settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button><button class="sim-check">check</button></div>
     </div></div>
   </div>
 </section>
+
+</div>
 
 <section class="statement wrap">
   <h2>Scams don't stay in the inbox.</h2>
@@ -451,10 +539,10 @@ footer .cols{display:grid;grid-template-columns:1fr 1fr;gap:40px}
             <div class="cam">
               <div class="chip"><i></i>watching</div>
               <div class="region"></div>
-              <div class="rb" style="left:-2%;top:17%;width:70%;height:3.5%"><b>Lookalike domain</b></div>
-              <div class="rb" style="left:58%;top:62%;width:16%;height:3%"><b>Price far below normal</b></div>
+              <div class="rb" style="left:.5%;top:20.7%;width:19%;height:2.7%"><b style="left:-2px">Lookalike domain</b></div>
+              <div class="rb" style="left:89%;top:60.8%;width:10.5%;height:2.9%"><b style="left:auto;right:-2px">Price far below normal</b></div>
               <div class="card"><div class="ch"><b>!</b>LIKELY SCAM</div><div class="act">Don't pay or reply.</div>
-                <div class="cwhy" style="font-size:.85em">Uses the name 'ray-ban.com' but ray-band.com is not its official website.</div></div>
+                <div class="cwhy">Uses the name 'ray-ban.com' but ray-band.com is not its official website.</div><div class="cps"><span>Lookalike domain</span><span>Price far below normal</span></div></div>
             </div>
           </div>
 
@@ -507,83 +595,6 @@ gsap.registerPlugin(ScrollTrigger);
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 if (!location.hash) scrollTo(0, 0);
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-/* Hero cues timed to the real footage (hero.mp4, 19 s loop):
-   0–5.5 webshop · 5.5–11 frozen frame, real verdict · 11–13.2 email · 13.2–19 frozen frame.
-   Boxes are the server's box_2d ([ymin,xmin,ymax,xmax], 0–1000) for these exact frames. */
-const SHOP=[{b:[147,140,168,545],l:"Lookalike domain"},{b:[842,563,856,610],l:"Price far below normal",above:true}];
-const MAIL=[{b:[383,310,452,741],l:"Unrealistic offer or returns",c:"amber"},{b:[385,313,414,472],l:"Uses a brand name",c:"amber",above:true}];
-const CUES=[
-  {t:0.2,text:"You're shopping for sunglasses on a laptop."},
-  {t:2.6,text:"Second Look reads the page. The price and the address look off."},
-  {t:5.0,text:"Checking what you see…",scan:true},
-  {t:5.7,text:'<span class="voice">“Hold on. This looks like a scam. This address is ray-ban<b>d</b>.com, not the official website.”</span>',
-   boxes:SHOP,signs:[["Lookalike address · ray-band.com ≠ ray-ban.com"],["Price far below normal · €9.90 Ray-Bans"]],verdict:["LIKELY SCAM",""],
-   hud:["LIKELY SCAM","Don't pay or reply.","Lookalike domain · Price far below normal","#FF453A"]},
-  {t:11.0,text:"Later, an email: a weekly paid job “from UNICEF”.",clear:true},
-  {t:13.0,text:"Checking what you see…",scan:true},
-  {t:13.6,text:'<span class="voice">“Hmm, something\'s off here. Easy weekly income is classic bait.”</span>',
-   boxes:MAIL,signs:[["Unrealistic offer · $500 a week","amber"],["Uses a brand name · UNICEF","amber"]],verdict:["BE CAREFUL","amber"],
-   hud:["BE CAREFUL","Check before you pay.","Unrealistic offer · Uses a brand name","#FF9F0A"]}];
-const vid=document.getElementById('vid'),lineText=document.getElementById('lineText'),boxesEl=document.getElementById('boxes'),signsEl=document.getElementById('signs'),hud=document.getElementById('hud');
-let typer,cueIdx=-1;
-function type(html){ if(typer) typer.kill(); const tmp=document.createElement('div'); tmp.innerHTML=html; const plain=tmp.textContent, o={n:0};
-  typer=gsap.to(o,{n:plain.length,duration:Math.min(2,plain.length*.026),ease:'none',onUpdate(){const k=Math.round(o.n); lineText.innerHTML=k>=plain.length?html:plain.slice(0,k).replace(/</g,'&lt;');}}); }
-function clearMarks(){ gsap.to([...boxesEl.children,...signsEl.children],{opacity:0,duration:.3,onComplete(){boxesEl.innerHTML='';signsEl.innerHTML='';}}); gsap.to(hud,{opacity:0,y:14,duration:.35}); }
-function showMarks(c){
-  boxesEl.innerHTML=''; signsEl.innerHTML='';
-  c.boxes.forEach(x=>{ const [y0,x0,y1,x1]=x.b, d=document.createElement('div');
-    d.className='bx'+(x.c?' '+x.c:'')+(x.above?' above':''); d.style.cssText=`left:${x0/10-.5}%;top:${y0/10-.9}%;width:${(x1-x0)/10+1}%;height:${(y1-y0)/10+1.8}%`;
-    d.innerHTML=`<b>${x.l}</b>`; boxesEl.appendChild(d); });
-  gsap.to(boxesEl.children,{opacity:1,scale:1,duration:.5,ease:'back.out(1.8)',stagger:.2});
-  c.signs.forEach(([t,cl])=>{ const s=document.createElement('span'); s.className='sign'+(cl?' '+cl:''); s.innerHTML=`<i></i>${t}`; signsEl.appendChild(s); });
-  const v=document.createElement('span'); v.className='sign verdict '+c.verdict[1]; v.textContent=c.verdict[0]; signsEl.appendChild(v);
-  gsap.to(signsEl.children,{opacity:1,y:0,duration:.6,ease:'power3.out',stagger:.14,delay:.35});
-  document.getElementById('hudWord').textContent=c.hud[0]; document.getElementById('hudAct').textContent=c.hud[1];
-  document.getElementById('hudWhy').textContent=c.hud[2]; hud.querySelector('svg').setAttribute('fill',c.hud[3]);
-  gsap.fromTo(hud,{opacity:0,y:14,scale:.98},{opacity:1,y:0,scale:1,duration:.7,ease:'power3.out',delay:.5}); }
-function scan(){ gsap.fromTo('#scan',{top:'-18%',opacity:1},{top:'100%',duration:1,ease:'power1.inOut',onComplete(){gsap.set('#scan',{opacity:0})}}); }
-vid.addEventListener('timeupdate',()=>{ const t=vid.currentTime; let i=-1; CUES.forEach((c,k)=>{if(t>=c.t)i=k;});
-  if(i===cueIdx) return; if(i<cueIdx) clearMarks(); cueIdx=i; if(i<0) return;
-  const c=CUES[i]; type(c.text); if(c.clear) clearMarks(); if(c.scan) scan(); if(c.boxes) showMarks(c); });
-
-/* ---------- "put them on": rendered 3D glasses, scrubbed by scroll, handing over to the real footage ---------- */
-const N=120, INTRO=40, dpr=Math.min(devicePixelRatio||1,2);
-const base=(innerWidth<800?'media/dive-s/':'media/dive/');
-const frames=[]; for(let i=1;i<=N;i++){ const im=new Image(); im.decoding='async'; im.src=base+'f_'+String(i).padStart(4,'0')+'.webp'; frames[i]=im; }
-const cv=document.getElementById('dive'), ctx=cv.getContext('2d'), heroEl=document.querySelector('.hero'), pov=document.getElementById('pov');
-const state={f:1}; let handed=false;
-function ready(im){ return im && im.complete && im.naturalWidth>0; }
-function draw(){
-  const W=heroEl.clientWidth, Hh=heroEl.clientHeight;
-  if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(Hh*dpr)){ cv.width=Math.round(W*dpr); cv.height=Math.round(Hh*dpr); }
-  let i=Math.max(1,Math.min(N,Math.round(state.f))), im=frames[i];
-  if(!ready(im)) for(let k=i;k>=1;k--) if(ready(frames[k])){ im=frames[k]; break; }
-  ctx.fillStyle='#000'; ctx.fillRect(0,0,cv.width,cv.height);
-  if(!ready(im)) return;
-  // centred "cover" early on, easing into the hero footage's exact rectangle at the end
-  const cw=Math.min(W,Hh*16/9)*.92, ch=cw*9/16, a={x:(W-cw)/2,y:(Hh-ch)/2+20,w:cw,h:ch};
-  const hr=heroEl.getBoundingClientRect(), pr=pov.getBoundingClientRect(), b={x:pr.left-hr.left,y:pr.top-hr.top,w:pr.width,h:pr.height};
-  const t=Math.min(1,Math.max(0,(state.f-44)/(92-44))), e=t*t*(3-2*t);
-  const r={x:a.x+(b.x-a.x)*e,y:a.y+(b.y-a.y)*e,w:a.w+(b.w-a.w)*e,h:a.h+(b.h-a.h)*e};
-  ctx.drawImage(im,r.x*dpr,r.y*dpr,r.w*dpr,r.h*dpr);
-}
-function handoff(on){
-  if(on===handed) return; handed=on;
-  if(on){ heroEl.classList.remove('diving'); cueIdx=-1; boxesEl.innerHTML=''; signsEl.innerHTML='';
-    vid.currentTime=0; vid.play().catch(()=>{});
-    gsap.to(cv,{opacity:0,duration:.5,ease:'power1.out'});
-    gsap.fromTo('.hero .ov:not(.hud)',{opacity:0},{opacity:1,duration:.8,stagger:.06,ease:'power2.out'}); }
-  else { vid.pause(); gsap.to(cv,{opacity:1,duration:.25}); heroEl.classList.add('diving'); gsap.set(hud,{opacity:0}); }
-}
-frames[1].onload=draw; addEventListener('resize',draw);
-// on load: the glasses appear and settle (frames 1-40), then scrolling dives in (40-120)
-gsap.to(state,{f:INTRO,duration:reduce?0:2.2,ease:'power2.out',onUpdate:draw,delay:.2});
-ScrollTrigger.create({trigger:'.hero',start:'top top',end:'+=160%',pin:true,scrub:.6,
-  onUpdate(self){ if(self.progress>0){ state.f=INTRO+(N-INTRO)*self.progress; draw(); } handoff(self.progress>.985); }});
-ScrollTrigger.create({trigger:'.hero',start:'top top',end:'bottom top',endTrigger:'.statement',onLeave:()=>vid.pause(),onEnterBack:()=>{ if(handed) vid.play().catch(()=>{}); }});
-gsap.to('#sheen',{x:'60%',duration:9,repeat:-1,yoyo:true,ease:'sine.inOut'});
-if(reduce){ state.f=N; draw(); handoff(true); }
 
 gsap.from('.statement > *',{y:50,opacity:0,duration:1.1,ease:'power3.out',stagger:.15,scrollTrigger:{trigger:'.statement',start:'top 75%'}});
 gsap.utils.toArray('.step').forEach(s=>gsap.from(s.children,{y:40,opacity:0,duration:1,ease:'power3.out',stagger:.08,scrollTrigger:{trigger:s,start:'top 70%'}}));
@@ -648,6 +659,20 @@ toggle.onclick=()=>{ stopAll(); const on=!alwaysOn; setToggle(on); mood(on?'chec
 [...plist].forEach(d=>d.onclick=()=>{ stopAll(); d.classList.toggle('off'); });
 go('ready'); syncPhone();
 </script>
-<script src="media/sim.js"></script>
+<script>
+(() => {   // "Watch the video": a YouTube player on top of the page; closes on the cross, the backdrop or Escape
+  const html = document.documentElement, m = document.getElementById('vidmodal'), f = document.getElementById('vidframe'), b = document.getElementById('vidbtn');
+  const open = () => { f.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/4tVMIr4o9ec?autoplay=1&rel=0&playsinline=1" title="Second Look video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>';
+    m.hidden = false; html.classList.add('vidopen'); document.getElementById('vidx').focus(); };
+  const close = () => { m.hidden = true; f.innerHTML = ''; html.classList.remove('vidopen'); b.focus(); };
+  b.addEventListener('click', open);
+  document.getElementById('vidx').addEventListener('click', close);
+  m.addEventListener('click', e => { if (e.target === m) close(); });
+  addEventListener('keydown', e => { if (e.key === 'Escape' && !m.hidden) close(); });
+  m.addEventListener('wheel', e => e.preventDefault(), { passive: false });
+})();
+</script>
+<script src="media/sim.js?v=11"></script>
+<script type="module" src="media/glasses.js?v=6"></script>
 </body>
 </html>
