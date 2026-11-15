@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-/// Talks to the Second Look backend (FastAPI on Hostinger). Holds no API keys:
+/// Talks to the Second Look backend (FastAPI at secondlook.pgf.lv). Holds no API keys:
 /// Gemini is called by the server, never from the phone.
 struct APIClient {
   enum APIError: Error {
