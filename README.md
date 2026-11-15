@@ -106,4 +106,4 @@ Quick start: the app in [`ios/README.md`](ios/README.md), the server in [`api/RE
 2. Test with people of different ages.
 3. Pilot with a bank's fraud team or a consumer organisation.
 
-<p align="center"><br><img src="web/media/icon.png" width="64" alt="Second Look icon"><br><i>Built at Junction 2026 for the Meta challenge "AI Glasses for Everyone, Everyday".</i></p>
+<p align="center"><br><img src="web/media/icon.png" width="64" alt="Second Look icon"><br><i>Built at Junction 2026 for the Meta challenge "AI Glasses for Everyone, Everyday".</i><br><br>Made by <b>Progresful</b> (Emils Plavenieks, Jurgis Kacens, Krisjanis Mezulis) 2026</p>
